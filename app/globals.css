@@ -1,86 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Steel Color Palette */
-  --background: #f8f9fa; /* Bright Snow */
-  --foreground: #212529; /* Shadow Grey */
-  
+  /* Popular e‑commerce palette */
+  --background: #f5f5f5;      /* Light neutral */
+  --foreground: #333333;      /* Dark text */
+  --primary: #ff6600;        /* Vibrant orange */
+  --primary-foreground: #ffffff;
+  --secondary: #0066ff;      /* Trustworthy blue */
+  --secondary-foreground: #ffffff;
+  --accent: #ffcc00;          /* Highlight yellow */
+  --accent-foreground: #333333;
   --card: #ffffff;
-  --card-foreground: #212529;
-  
+  --card-foreground: #333333;
   --popover: #ffffff;
-  --popover-foreground: #212529;
-
-  /* Primary - Gunmetal */
-  --primary: #343a40;
-  --primary-foreground: #f8f9fa;
-
-  /* Secondary - Platinum */
-  --secondary: #e9ecef;
-  --secondary-foreground: #343a40;
-
-  /* Accent - Alabaster Grey */
-  --accent: #dee2e6;
-  --accent-foreground: #343a40;
-
-  /* Destructive - Iron Grey */
-  --destructive: #495057;
-  --destructive-foreground: #f8f9fa;
-
-  /* Muted - Pale Slate */
-  --muted: #ced4da;
-  --muted-foreground: #6c757d;
-
-  /* Border - Pale Slate */
-  --border: #dee2e6;
-  
-  /* Input */
-  --input: #ced4da;
-  
-  /* Ring (focus) - Slate Grey */
-  --ring: #6c757d;
-  
-  --radius: 0.5rem;
+  --popover-foreground: #333333;
+  --muted: #e2e8f0;          /* Soft gray for muted elements */
+  --muted-foreground: #555555;
+  --border: #d1d5db;          /* Light border */
+  --input: #ffffff;
+  --ring: var(--primary);
+  --radius: 0.75rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+}
+
+/* Glassmorphism utility */
+.glass {
+  @apply bg-white/30 backdrop-blur-lg border border-white/20 rounded-lg;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
 }

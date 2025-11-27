@@ -1,6 +1,7 @@
 import { CategoryList } from "@/components/home/category-list"
 import { FeaturedBlogs } from "@/components/home/featured-blogs"
 import { HeroCarousel } from "@/components/home/hero-carousel"
+import { HomeWrapper } from "@/components/home/home-wrapper"
 import { NewArrivals } from "@/components/home/new-arrivals"
 import { TrendingProducts } from "@/components/home/trending-products"
 import { db } from "@/lib/db"
@@ -35,14 +36,15 @@ export default async function Home() {
   })
 
   return (
-    <div className="space-y-16 pb-16">
+    <HomeWrapper>
       <HeroCarousel banners={banners} />
-      <div className="container mx-auto px-4 space-y-16">
+      
+      <div className="container mx-auto px-4 space-y-24 relative">
         <CategoryList categories={categories} />
         <TrendingProducts products={trendingProducts} />
         <NewArrivals products={newArrivals} />
         <FeaturedBlogs blogs={featuredBlogs} />
       </div>
-    </div>
+    </HomeWrapper>
   )
 }
