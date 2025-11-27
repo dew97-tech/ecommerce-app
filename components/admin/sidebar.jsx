@@ -1,6 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import { FileText, Image as ImageIcon, LayoutDashboard, List, LogOut, MessageSquare, Package, ShoppingCart, Star } from 'lucide-react'
 import { signOut } from 'next-auth/react'
@@ -12,49 +14,41 @@ const routes = [
     label: 'Dashboard',
     icon: LayoutDashboard,
     href: '/admin',
-    color: 'text-sky-500',
   },
   {
     label: 'Products',
     icon: Package,
     href: '/admin/products',
-    color: 'text-violet-500',
   },
   {
     label: 'Categories',
     icon: List,
     href: '/admin/categories',
-    color: 'text-emerald-500',
   },
   {
     label: 'Orders',
     icon: ShoppingCart,
     href: '/admin/orders',
-    color: 'text-pink-700',
   },
   {
     label: 'Banners',
     icon: ImageIcon,
     href: '/admin/banners',
-    color: 'text-orange-700',
   },
   {
     label: 'Blogs',
     icon: FileText,
     href: '/admin/blogs',
-    color: 'text-yellow-500',
   },
   {
     label: 'Comments',
     icon: MessageSquare,
     href: '/admin/comments',
-    color: 'text-blue-500',
   },
   {
     label: 'Reviews',
     icon: Star,
     href: '/admin/reviews',
-    color: 'text-red-500',
   },
 ]
 
@@ -62,33 +56,47 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="space-y-4 py-4 flex flex-col h-full bg-slate-900 text-white">
-      <div className="px-3 py-2 flex-1">
-        <Link href="/admin" className="flex items-center pl-3 mb-14">
-          <h1 className="text-2xl font-bold">Admin Panel</h1>
+    <div className="flex h-full w-64 flex-col border-r bg-card">
+      <div className="p-6">
+        <Link href="/admin" className="flex items-center">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            Admin Panel
+          </h2>
         </Link>
+      </div>
+      
+      <Separator />
+      
+      <ScrollArea className="flex-1 px-3 py-4">
         <div className="space-y-1">
           {routes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
               className={cn(
-                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer hover:text-white hover:bg-white/10 rounded-lg transition",
-                pathname === route.href ? "text-white bg-white/10" : "text-zinc-400"
+                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all hover:bg-accent',
+                pathname === route.href
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <div className="flex items-center flex-1">
-                <route.icon className={cn("h-5 w-5 mr-3", route.color)} />
-                {route.label}
-              </div>
+              <route.icon className="h-5 w-5" />
+              {route.label}
             </Link>
           ))}
         </div>
-      </div>
-      <div className="px-3 py-2">
-        <Button onClick={() => signOut()} variant="destructive" className="w-full justify-start">
-            <LogOut className="h-5 w-5 mr-3" />
-            Logout
+      </ScrollArea>
+      
+      <Separator />
+      
+      <div className="p-4">
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-3"
+          onClick={() => signOut({ callbackUrl: '/' })}
+        >
+          <LogOut className="h-5 w-5" />
+          Logout
         </Button>
       </div>
     </div>

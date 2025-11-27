@@ -1,37 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  /* User Requested Palette - Enforced Light Mode */
-  --background: #F8FAFC;
-  --foreground: #0f172a;
-
+  /* Light Steel Color Palette */
+  --background: #f8f9fa; /* Bright Snow */
+  --foreground: #212529; /* Shadow Grey */
+  
   --card: #ffffff;
-  --card-foreground: #0f172a;
+  --card-foreground: #212529;
   
   --popover: #ffffff;
-  --popover-foreground: #0f172a;
+  --popover-foreground: #212529;
 
-  /* #9AA6B2 */
-  --primary: #9AA6B2;
-  --primary-foreground: #ffffff;
+  /* Primary - Gunmetal */
+  --primary: #343a40;
+  --primary-foreground: #f8f9fa;
 
-  /* #D9EAFD */
-  --secondary: #D9EAFD;
-  --secondary-foreground: #0f172a;
+  /* Secondary - Platinum */
+  --secondary: #e9ecef;
+  --secondary-foreground: #343a40;
 
-  /* #BCCCDC */
-  --muted: #BCCCDC;
-  --muted-foreground: #475569;
+  /* Accent - Alabaster Grey */
+  --accent: #dee2e6;
+  --accent-foreground: #343a40;
 
-  --accent: #D9EAFD;
-  --accent-foreground: #0f172a;
+  /* Destructive - Iron Grey */
+  --destructive: #495057;
+  --destructive-foreground: #f8f9fa;
 
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  /* Muted - Pale Slate */
+  --muted: #ced4da;
+  --muted-foreground: #6c757d;
 
-  --border: #BCCCDC;
-  --input: #BCCCDC;
-  --ring: #9AA6B2;
+  /* Border - Pale Slate */
+  --border: #dee2e6;
+  
+  /* Input */
+  --input: #ced4da;
+  
+  /* Ring (focus) - Slate Grey */
+  --ring: #6c757d;
   
   --radius: 0.5rem;
 }
@@ -64,12 +71,13 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
 }
-
-/* Removed dark mode media query to enforce light theme */
 
 body {
   background: var(--background);

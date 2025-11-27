@@ -49,10 +49,10 @@ export function EditBlogForm({ blog }) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="image">Cover Image URL</Label>
+          <Label htmlFor="imageUrl">Cover Image URL</Label>
           <Input 
-            id="image" 
-            name="image" 
+            id="imageUrl" 
+            name="imageUrl" 
             defaultValue={blog.imageUrl} 
           />
         </div>

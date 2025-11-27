@@ -44,8 +44,8 @@ export default function CreateBlogPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="image">Cover Image URL</Label>
-          <Input id="image" name="image" placeholder="https://..." />
+          <Label htmlFor="imageUrl">Cover Image URL</Label>
+          <Input id="imageUrl" name="imageUrl" placeholder="https://..." />
           <p className="text-xs text-muted-foreground">Provide a URL for the blog cover image.</p>
         </div>
 

@@ -104,10 +104,12 @@ export function Navbar() {
                      Profile
                    </DropdownMenuItem>
                  </Link>
-                 <DropdownMenuItem className="cursor-pointer">
-                   <Package className="mr-2 h-4 w-4" />
-                   Orders
-                 </DropdownMenuItem>
+                 <Link href="/orders">
+                   <DropdownMenuItem className="cursor-pointer">
+                     <Package className="mr-2 h-4 w-4" />
+                     Orders
+                   </DropdownMenuItem>
+                 </Link>
                  {session.user.role === 'ADMIN' && (
                     <Link href="/admin">
                       <DropdownMenuItem className="cursor-pointer">
