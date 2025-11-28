@@ -32,10 +32,7 @@ export function Navbar({ categoryData }) {
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-primary text-primary-foreground p-2 rounded-lg">
-              <Package className="h-6 w-6" />
-            </div>
-            <span className="text-2xl font-bold text-foreground tracking-tight">BD Shop</span>
+            <span className="text-2xl font-bold text-foreground tracking-tight">TechNexus</span>
           </Link>
 
           {/* Search Bar - Hidden on mobile, visible on md+ */}
