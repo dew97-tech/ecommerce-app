@@ -42,7 +42,11 @@ model Category {
   slug      String    @unique
   image     String?
   icon      String?
+  isFeatured Boolean   @default(false)
   products  Product[]
+  parentId  String?
+  parent    Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -51,14 +55,18 @@ model Product {
   id              String      @id @default(cuid())
   name            String
   slug            String      @unique
+  productCode     String?     @unique
+  brand           String?
   description     String      @db.Text
+  shortDescription String?    @db.Text
+  specifications  String?     @db.Text
   price           Float
   discountedPrice Float?
   stock           Int         @default(0)
   isTrending      Boolean     @default(false)
   images          String      @db.Text // Stored as JSON string
-  categoryId      String
-  category        Category    @relation(fields: [categoryId], references: [id])
+  categoryId      String?
+  category        Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   variants        Variant[]
   orderItems      OrderItem[]
   reviews         Review[]
@@ -106,6 +114,7 @@ model Banner {
   id        String   @id @default(cuid())
   image     String
   title     String?
+  buttonText String?
   link      String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())

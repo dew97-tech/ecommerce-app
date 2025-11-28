@@ -27,6 +27,9 @@
   --input: #FFFFFF;
   --ring: #C9B59C;
   
+  --destructive: #ef4444;     /* Red for delete actions */
+  --destructive-foreground: #ffffff;
+
   --radius: 0.5rem;           /* Slightly sharper corners for tech look */
 }
 
@@ -47,7 +50,10 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 }
 
 /* Glassmorphism utility */

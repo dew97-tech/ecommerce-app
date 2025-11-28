@@ -68,17 +68,41 @@ export function ProductForm({ product, categories }) {
             {state.errors?.slug && <p className="text-red-500 text-sm">{state.errors.slug}</p>}
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="brand">Brand</Label>
+              <Input id="brand" name="brand" defaultValue={product?.brand} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="productCode">Product Code</Label>
+              <Input id="productCode" name="productCode" defaultValue={product?.productCode} />
+            </div>
+          </div>
+
           <div className="grid gap-2">
-            <Label>Description (Markdown)</Label>
+            <Label htmlFor="shortDescription">Short Description (Key Features)</Label>
+            <Input id="shortDescription" name="shortDescription" defaultValue={product?.shortDescription} placeholder="Comma separated features" />
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Description (Markdown or JSON)</Label>
             <MarkdownEditor 
               value={description}
               onChange={setDescription}
-              placeholder="Write product description with specifications..."
+              placeholder="Write product description..."
             />
-            <p className="text-xs text-muted-foreground">
-              Use markdown for formatting: **bold**, _italic_, lists, etc.
-            </p>
-            {state.errors?.description && <p className="text-red-500 text-sm">{state.errors.description}</p>}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="specifications">Specifications (JSON Format)</Label>
+            <textarea 
+                id="specifications" 
+                name="specifications" 
+                defaultValue={product?.specifications} 
+                className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="{'Category': {'Key': 'Value'}}"
+            />
+            <p className="text-xs text-muted-foreground">Enter specifications as a JSON object or Python-style dictionary string.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

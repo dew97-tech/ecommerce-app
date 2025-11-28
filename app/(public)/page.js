@@ -26,6 +26,7 @@ export default async function Home() {
   })
 
   const categories = await db.category.findMany({
+    where: { isFeatured: true },
     orderBy: { name: 'asc' }
   })
 

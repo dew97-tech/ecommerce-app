@@ -121,34 +121,36 @@ export function Navbar() {
             )}
 
             {/* Mobile Menu */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px]">
-                <div className="flex flex-col gap-6 mt-8">
-                  <div className="px-2">
-                    <h3 className="font-semibold text-lg mb-4">Menu</h3>
-                    <nav className="flex flex-col gap-2">
-                      <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent/50 text-foreground font-medium">
-                        <LayoutDashboard className="h-4 w-4" /> Home
-                      </Link>
-                      <Link href="/products" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                        <Package className="h-4 w-4" /> Products
-                      </Link>
-                      <Link href="/categories" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                        <Grid3x3 className="h-4 w-4" /> Categories
-                      </Link>
-                      <Link href="/blogs" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                        <BookOpen className="h-4 w-4" /> Blog
-                      </Link>
-                    </nav>
+            {isMounted && (
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="md:hidden">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px]">
+                  <div className="flex flex-col gap-6 mt-8">
+                    <div className="px-2">
+                      <h3 className="font-semibold text-lg mb-4">Menu</h3>
+                      <nav className="flex flex-col gap-2">
+                        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent/50 text-foreground font-medium">
+                          <LayoutDashboard className="h-4 w-4" /> Home
+                        </Link>
+                        <Link href="/products" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                          <Package className="h-4 w-4" /> Products
+                        </Link>
+                        <Link href="/categories" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                          <Grid3x3 className="h-4 w-4" /> Categories
+                        </Link>
+                        <Link href="/blogs" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                          <BookOpen className="h-4 w-4" /> Blog
+                        </Link>
+                      </nav>
+                    </div>
                   </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetContent>
+              </Sheet>
+            )}
           </div>
         </div>
       </div>

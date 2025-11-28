@@ -1,3 +1,4 @@
+import { BannerEditDialog } from "@/components/admin/banner-edit-dialog"
 import { BannerForm } from "@/components/admin/banner-form"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,7 +9,16 @@ import Image from "next/image"
 export const dynamic = 'force-dynamic'
 
 export default async function BannersPage() {
-  const banners = await db.banner.findMany({ orderBy: { createdAt: 'desc' } })
+  const [banners, categories] = await Promise.all([
+    db.banner.findMany({ orderBy: { createdAt: 'desc' } }),
+    db.category.findMany({ orderBy: { name: 'asc' } })
+  ])
+
+  const routes = [
+    { name: 'Home', path: '/' },
+    { name: 'All Products', path: '/products' },
+    ...categories.map(c => ({ name: `Category: ${c.name}`, path: `/products?category=${c.slug}` }))
+  ]
 
   return (
     <div className="p-8 pt-6 space-y-8">
@@ -19,7 +29,7 @@ export default async function BannersPage() {
           <CardTitle>Add New Banner</CardTitle>
         </CardHeader>
         <CardContent>
-          <BannerForm />
+          <BannerForm routes={routes} />
         </CardContent>
       </Card>
 
@@ -33,10 +43,14 @@ export default async function BannersPage() {
               <div>
                 <p className="font-bold">{banner.title}</p>
                 <p className="text-sm text-muted-foreground">{banner.link}</p>
+                {banner.buttonText && <p className="text-xs text-primary mt-1">Button: {banner.buttonText}</p>}
               </div>
-              <form action={deleteBanner.bind(null, banner.id)}>
-                <Button variant="destructive" size="sm">Delete</Button>
-              </form>
+              <div className="flex gap-2">
+                <BannerEditDialog banner={banner} routes={routes} />
+                <form action={deleteBanner.bind(null, banner.id)}>
+                    <Button variant="destructive" size="sm">Delete</Button>
+                </form>
+              </div>
             </CardContent>
           </Card>
         ))}

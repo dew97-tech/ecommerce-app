@@ -73,10 +73,10 @@ export function HeroCarousel({ banners = [] }) {
                               {banner.description}
                             </p>
                           )}
-                          <Link href="/products">
+                          <Link href={banner.link || "/products"}>
                             <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-lg gap-2 rounded-lg px-8 h-12 text-base font-semibold">
                               <ShoppingBag className="h-5 w-5" />
-                              Shop Now
+                              {banner.buttonText || "Shop Now"}
                             </Button>
                           </Link>
                         </motion.div>
