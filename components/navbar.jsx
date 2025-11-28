@@ -9,12 +9,17 @@ import { BookOpen, Grid3x3, LayoutDashboard, LogOut, Menu, Package, Search, Shop
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { MultiCategoryMenu, SingleCategoryMenu } from "./layout/mega-menu"
 
-export function Navbar() {
+export function Navbar({ categoryData }) {
   const items = useCartStore((state) => state.items)
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0)
   const [isMounted, setIsMounted] = useState(false)
   const { data: session } = useSession()
+
+  const VISIBLE_COUNT = 5
+  const visibleCategories = categoryData?.slice(0, VISIBLE_COUNT) || []
+  const hiddenCategories = categoryData?.slice(VISIBLE_COUNT) || []
 
   useEffect(() => {
     setIsMounted(true)
@@ -165,9 +170,15 @@ export function Navbar() {
             <Link href="/products" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
               All Products
             </Link>
-            <Link href="/categories" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
-              Categories
-            </Link>
+            
+            {visibleCategories.map(category => (
+                <SingleCategoryMenu key={category.id} category={category} />
+            ))}
+
+            {hiddenCategories.length > 0 && (
+                <MultiCategoryMenu categories={hiddenCategories} trigger="More" />
+            )}
+
             <Link href="/blogs" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
               Blog
             </Link>
