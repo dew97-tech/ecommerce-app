@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useCartStore } from "@/store/useCartStore"
-import { BookOpen, LayoutDashboard, LogOut, Menu, Package, Search, ShoppingCart, User, UserCircle } from "lucide-react"
+import { BookOpen, Grid3x3, LayoutDashboard, LogOut, Menu, Package, Search, ShoppingCart, User, UserCircle } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -21,121 +21,160 @@ export function Navbar() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl border-b border-border/40">
-      <div className="container flex h-16 items-center px-4">
-        {isMounted ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden hover:bg-accent/50">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] sm:w-[320px]">
-              <nav className="flex flex-col gap-3 mt-8">
-                <Link href="/" className="text-base font-medium px-4 py-2 rounded-lg hover:bg-accent transition-colors">Home</Link>
-                <Link href="/products" className="text-base font-medium px-4 py-2 rounded-lg hover:bg-accent transition-colors">Products</Link>
-                <Link href="/categories" className="text-base font-medium px-4 py-2 rounded-lg hover:bg-accent transition-colors">Categories</Link>
-                <Link href="/blogs" className="text-base font-medium px-4 py-2 rounded-lg hover:bg-accent transition-colors flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Blog
-                </Link>
-              </nav>
-            </SheetContent>
-          </Sheet>
-        ) : (
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
-        
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">BD Shop</span>
-        </Link>
-
-        <div className="hidden md:flex items-center space-x-1 text-sm font-medium">
-          <Link href="/products" className="px-4 py-2 rounded-lg transition-colors hover:bg-accent/50 text-foreground/70 hover:text-foreground">Products</Link>
-          <Link href="/categories" className="px-4 py-2 rounded-lg transition-colors hover:bg-accent/50 text-foreground/70 hover:text-foreground">Categories</Link>
-          <Link href="/blogs" className="px-4 py-2 rounded-lg transition-colors hover:bg-accent/50 text-foreground/70 hover:text-foreground flex items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            Blog
-          </Link>
-        </div>
-
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="pl-9 h-10 bg-accent/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/20 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-              />
+    <div className="w-full bg-background border-b border-border sticky top-0 z-50">
+      {/* Main Header */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between gap-4">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <div className="bg-primary text-primary-foreground p-2 rounded-lg">
+              <Package className="h-6 w-6" />
             </div>
-          </div>
-          <Link href="/cart">
-            <Button variant="ghost" size="icon" className="relative hover:bg-accent/50">
-              <ShoppingCart className="h-5 w-5" />
-              {isMounted && totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center shadow-lg">
-                  {totalItems}
-                </span>
-              )}
-            </Button>
+            <span className="text-2xl font-bold text-foreground tracking-tight">BD Shop</span>
           </Link>
-          
-          {isMounted && session ? (
-             <DropdownMenu>
-               <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon" className="hover:bg-accent/50">
-                   <User className="h-5 w-5" />
-                 </Button>
-               </DropdownMenuTrigger>
-               <DropdownMenuContent align="end" className="w-56">
-                 <DropdownMenuLabel className="font-normal">
-                   <div className="flex flex-col space-y-1">
-                     <p className="text-sm font-medium leading-none">{session.user.name || 'User'}</p>
-                     <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
-                   </div>
-                 </DropdownMenuLabel>
-                 <DropdownMenuSeparator />
-                 <Link href="/profile">
-                   <DropdownMenuItem className="cursor-pointer">
-                     <UserCircle className="mr-2 h-4 w-4" />
-                     Profile
-                   </DropdownMenuItem>
-                 </Link>
-                 <Link href="/orders">
-                   <DropdownMenuItem className="cursor-pointer">
-                     <Package className="mr-2 h-4 w-4" />
-                     Orders
-                   </DropdownMenuItem>
-                 </Link>
-                 {session.user.role === 'ADMIN' && (
-                    <Link href="/admin">
-                      <DropdownMenuItem className="cursor-pointer">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        Admin Dashboard
-                      </DropdownMenuItem>
-                    </Link>
-                 )}
-                 <DropdownMenuSeparator />
-                 <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600 focus:text-red-600">
-                   <LogOut className="mr-2 h-4 w-4" />
-                   Logout
-                 </DropdownMenuItem>
-               </DropdownMenuContent>
-             </DropdownMenu>
-          ) : isMounted && !session ? (
-             <Link href="/login">
-               <Button variant="ghost" size="sm" className="hover:bg-accent/50">Login</Button>
-             </Link>
-          ) : (
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
+
+          {/* Search Bar - Hidden on mobile, visible on md+ */}
+          <div className="hidden md:flex flex-1 max-w-2xl mx-8 relative">
+            <Input
+              type="search"
+              placeholder="Search for products, brands and more..."
+              className="w-full pl-4 pr-12 h-11 bg-input border-border focus-visible:ring-primary/20 rounded-lg"
+            />
+            <Button 
+              size="icon" 
+              className="absolute right-0 top-0 h-11 w-11 rounded-l-none rounded-r-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <Search className="h-5 w-5" />
             </Button>
-          )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            {/* Mobile Search Toggle */}
+            <Button variant="ghost" size="icon" className="md:hidden text-muted-foreground">
+              <Search className="h-5 w-5" />
+            </Button>
+
+            <Link href="/cart">
+              <Button variant="ghost" className="relative h-12 w-12 rounded-full border border-border/50 hover:bg-accent hover:text-accent-foreground">
+                <ShoppingCart className="h-5 w-5" />
+                {isMounted && totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[11px] font-bold text-primary-foreground flex items-center justify-center shadow-sm ring-2 ring-background">
+                    {totalItems}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            
+            {isMounted && session ? (
+               <DropdownMenu>
+                 <DropdownMenuTrigger asChild>
+                   <Button variant="ghost" className="relative h-12 w-12 rounded-full border border-border/50 hover:bg-accent hover:text-accent-foreground">
+                     <User className="h-5 w-5" />
+                   </Button>
+                 </DropdownMenuTrigger>
+                 <DropdownMenuContent align="end" className="w-56">
+                   <DropdownMenuLabel className="font-normal">
+                     <div className="flex flex-col space-y-1">
+                       <p className="text-sm font-medium leading-none">{session.user.name || 'User'}</p>
+                       <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                     </div>
+                   </DropdownMenuLabel>
+                   <DropdownMenuSeparator />
+                   <Link href="/profile">
+                     <DropdownMenuItem className="cursor-pointer">
+                       <UserCircle className="mr-2 h-4 w-4" />
+                       Profile
+                     </DropdownMenuItem>
+                   </Link>
+                   <Link href="/orders">
+                     <DropdownMenuItem className="cursor-pointer">
+                       <Package className="mr-2 h-4 w-4" />
+                       Orders
+                     </DropdownMenuItem>
+                   </Link>
+                   {session.user.role === 'ADMIN' && (
+                      <Link href="/admin">
+                        <DropdownMenuItem className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </DropdownMenuItem>
+                      </Link>
+                   )}
+                   <DropdownMenuSeparator />
+                   <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600 focus:text-red-600">
+                     <LogOut className="mr-2 h-4 w-4" />
+                     Logout
+                   </DropdownMenuItem>
+                 </DropdownMenuContent>
+               </DropdownMenu>
+            ) : isMounted && !session ? (
+               <Link href="/login">
+                 <Button className="font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
+                    Login
+                 </Button>
+               </Link>
+            ) : (
+              <Button variant="ghost" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            )}
+
+            {/* Mobile Menu */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px]">
+                <div className="flex flex-col gap-6 mt-8">
+                  <div className="px-2">
+                    <h3 className="font-semibold text-lg mb-4">Menu</h3>
+                    <nav className="flex flex-col gap-2">
+                      <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent/50 text-foreground font-medium">
+                        <LayoutDashboard className="h-4 w-4" /> Home
+                      </Link>
+                      <Link href="/products" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                        <Package className="h-4 w-4" /> Products
+                      </Link>
+                      <Link href="/categories" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                        <Grid3x3 className="h-4 w-4" /> Categories
+                      </Link>
+                      <Link href="/blogs" className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                        <BookOpen className="h-4 w-4" /> Blog
+                      </Link>
+                    </nav>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
-    </header>
+
+      {/* Navigation Bar - Desktop */}
+      <div className="hidden md:block border-t border-border bg-card">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-8 h-12 text-sm font-medium">
+            <Link href="/" className="text-primary border-b-2 border-primary h-full flex items-center px-1">
+              Home
+            </Link>
+            <Link href="/products" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
+              All Products
+            </Link>
+            <Link href="/categories" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
+              Categories
+            </Link>
+            <Link href="/blogs" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
+              Blog
+            </Link>
+            <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1">
+              Contact
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

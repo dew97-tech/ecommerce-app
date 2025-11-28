@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Clock, Facebook, Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react"
+import { Clock, Facebook, Instagram, Mail, MapPin, Package, Phone, Twitter } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -36,28 +36,26 @@ export function Footer() {
   ]
 
   return (
-    <footer className="relative mt-20 border-t border-border/40 bg-background/80 backdrop-blur-xl">
-      {/* Glassmorphism overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-accent/5 to-accent/10 pointer-events-none" />
-      
-      <div className="relative container mx-auto px-4 py-12">
+    <footer className="relative mt-20 border-t border-border bg-background text-foreground">
+      <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <h3 className="text-xl font-bold text-primary flex items-center gap-2">
+              <Package className="h-6 w-6" />
               BD Shop
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Your trusted online marketplace in Bangladesh. Discover quality products at competitive prices with fast delivery across the country.
             </p>
             <div className="flex gap-3">
-              <Button variant="outline" size="icon" className="rounded-full backdrop-blur-sm bg-card/50 hover:bg-card">
+              <Button variant="outline" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors border-border/50">
                 <Facebook className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full backdrop-blur-sm bg-card/50 hover:bg-card">
+              <Button variant="outline" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors border-border/50">
                 <Twitter className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="icon" className="rounded-full backdrop-blur-sm bg-card/50 hover:bg-card">
+              <Button variant="outline" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors border-border/50">
                 <Instagram className="h-4 w-4" />
               </Button>
             </div>
@@ -71,7 +69,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link 
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {link.name}
                   </Link>
@@ -88,7 +86,7 @@ export function Footer() {
                 <li key={category.name}>
                   <Link 
                     href={category.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {category.name}
                   </Link>
@@ -127,10 +125,10 @@ export function Footer() {
                   placeholder="Your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-9 bg-card/50 backdrop-blur-sm border-border/40"
+                  className="h-9 bg-background border-border"
                   required
                 />
-                <Button type="submit" size="sm" className="shadow-sm">
+                <Button type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                   Subscribe
                 </Button>
               </form>
@@ -138,14 +136,14 @@ export function Footer() {
           </div>
         </div>
 
-        <Separator className="my-8 bg-border/40" />
+        <Separator className="my-8 bg-border" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} BD Shop. All rights reserved.</p>
           <div className="flex gap-6">
-            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link>
           </div>
         </div>
       </div>

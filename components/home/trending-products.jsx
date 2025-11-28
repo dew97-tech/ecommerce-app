@@ -35,7 +35,7 @@ export function TrendingProducts({ products }) {
               transition={{ delay: index * 0.1 }}
               className="w-[280px]"
             >
-              <div className="glass h-full p-2 hover:border-primary/30 transition-colors duration-300">
+              <div className="h-full p-1">
                 <ProductCard product={product} />
               </div>
             </motion.div>

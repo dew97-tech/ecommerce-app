@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import {
     Carousel,
     CarouselContent,
@@ -45,8 +44,8 @@ export function HeroCarousel({ banners = [] }) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
-                  <CardContent className="flex aspect-[21/9] items-center justify-center p-0 relative min-h-[300px] md:min-h-[500px]">
+                <div className="relative rounded-2xl overflow-hidden shadow-sm border border-border/50">
+                  <div className="flex aspect-[21/9] items-center justify-center p-0 relative min-h-[300px] md:min-h-[500px] bg-muted">
                     <Image 
                       src={banner.image} 
                       alt={banner.title || "Banner"} 
@@ -54,7 +53,7 @@ export function HeroCarousel({ banners = [] }) {
                       className="object-cover"
                       priority={index === 0}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/20 to-transparent" />
                     
                     {(banner.title || banner.description) && (
                       <div className="absolute bottom-0 left-0 top-0 w-full md:w-2/3 p-8 md:p-16 flex flex-col justify-center gap-6">
@@ -62,20 +61,20 @@ export function HeroCarousel({ banners = [] }) {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.2, duration: 0.5 }}
-                          className="glass p-6 md:p-8 max-w-xl"
+                          className="max-w-xl"
                         >
                           {banner.title && (
-                            <h2 className="text-2xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                            <h2 className="text-3xl md:text-6xl font-bold text-white mb-4 leading-tight tracking-tight">
                               {banner.title}
                             </h2>
                           )}
                           {banner.description && (
-                            <p className="text-white/90 text-sm md:text-lg mb-6 leading-relaxed">
+                            <p className="text-white/90 text-sm md:text-lg mb-8 leading-relaxed font-medium">
                               {banner.description}
                             </p>
                           )}
                           <Link href="/products">
-                            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white border-0 shadow-lg gap-2 rounded-full px-8">
+                            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground border-0 shadow-lg gap-2 rounded-lg px-8 h-12 text-base font-semibold">
                               <ShoppingBag className="h-5 w-5" />
                               Shop Now
                             </Button>
@@ -83,8 +82,8 @@ export function HeroCarousel({ banners = [] }) {
                         </motion.div>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             </div>
           </CarouselItem>

@@ -1,25 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  /* Popular e‑commerce palette */
-  --background: #f5f5f5;      /* Light neutral */
-  --foreground: #333333;      /* Dark text */
-  --primary: #ff6600;        /* Vibrant orange */
-  --primary-foreground: #ffffff;
-  --secondary: #0066ff;      /* Trustworthy blue */
-  --secondary-foreground: #ffffff;
-  --accent: #ffcc00;          /* Highlight yellow */
+  /* User provided palette */
+  --background: #F9F8F6;      /* Lightest */
+  --foreground: #333333;      /* Dark text for contrast */
+  
+  --primary: #C9B59C;         /* Darker Accent */
+  --primary-foreground: #000000; /* Black text on primary for better contrast */
+  
+  --secondary: #EFE9E3;       /* Light beige */
+  --secondary-foreground: #333333;
+  
+  --accent: #D9CFC7;          /* Medium Light */
   --accent-foreground: #333333;
-  --card: #ffffff;
+  
+  --card: #FFFFFF;            /* Keep cards white for clean look, or use #EFE9E3 if preferred. Let's stick to white for "Startech" clean look */
   --card-foreground: #333333;
-  --popover: #ffffff;
+  
+  --popover: #FFFFFF;
   --popover-foreground: #333333;
-  --muted: #e2e8f0;          /* Soft gray for muted elements */
-  --muted-foreground: #555555;
-  --border: #d1d5db;          /* Light border */
-  --input: #ffffff;
-  --ring: var(--primary);
-  --radius: 0.75rem;
+  
+  --muted: #EFE9E3;
+  --muted-foreground: #666666;
+  
+  --border: #D9CFC7;
+  --input: #FFFFFF;
+  --ring: #C9B59C;
+  
+  --radius: 0.5rem;           /* Slightly sharper corners for tech look */
 }
 
 @theme inline {

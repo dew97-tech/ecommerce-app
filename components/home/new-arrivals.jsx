@@ -48,9 +48,9 @@ export function NewArrivals({ products }) {
       >
         {products.map((product) => (
           <motion.div key={product.id} variants={item}>
-            <div className="glass h-full p-2 hover:border-primary/30 transition-colors duration-300">
-              <ProductCard product={product} />
-            </div>
+              <div className="h-full p-1">
+                <ProductCard product={product} />
+              </div>
           </motion.div>
         ))}
       </motion.div>

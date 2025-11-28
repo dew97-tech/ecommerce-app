@@ -1,7 +1,6 @@
 'use client'
 
 import { FadeIn } from "@/components/animations/fade-in"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { motion } from "framer-motion"
 import {
     Camera,
@@ -56,34 +55,29 @@ export function CategoryList({ categories }) {
         </div>
       </FadeIn>
       
-      <ScrollArea className="w-full whitespace-nowrap rounded-2xl">
-        <div className="flex w-max space-x-6 p-4">
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -8, scale: 1.02 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link href={`/categories/${category.id}`}>
-                <div className="glass w-[160px] h-[160px] flex flex-col items-center justify-center gap-4 p-6 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer group">
-                  <div className="p-4 bg-secondary/10 rounded-full group-hover:bg-primary/10 transition-colors duration-300">
-                    <div className="text-secondary group-hover:text-primary transition-colors duration-300">
-                      {getCategoryIcon(category.name)}
-                    </div>
-                  </div>
-                  <span className="font-semibold text-sm truncate w-full text-center group-hover:text-primary transition-colors">
-                    {category.name}
-                  </span>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {categories.map((category, index) => (
+          <motion.div
+            key={category.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            whileHover={{ y: -5 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Link href={`/categories/${category.id}`}>
+              <div className="bg-card hover:border-primary/50 border border-border/50 rounded-xl p-6 flex flex-col items-center justify-center gap-4 shadow-sm hover:shadow-md transition-all duration-300 group h-full">
+                <div className="p-4 bg-secondary/30 rounded-full group-hover:bg-primary/10 transition-colors duration-300 text-primary">
+                  {getCategoryIcon(category.name)}
                 </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-        <ScrollBar orientation="horizontal" className="hidden" />
-      </ScrollArea>
+                <span className="font-medium text-sm text-center group-hover:text-primary transition-colors">
+                  {category.name}
+                </span>
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
     </div>
   )
 }
