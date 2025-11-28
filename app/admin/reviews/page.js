@@ -44,23 +44,28 @@ export default async function AdminReviewsPage({ searchParams }) {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Manage Reviews</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Manage Reviews</h2>
+          <p className="text-muted-foreground mt-1">Moderate product reviews</p>
+        </div>
+      </div>
 
-      <div className="border rounded-lg mb-6">
+      <div className="rounded-md border bg-card mb-6">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Comment</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="font-semibold">User</TableHead>
+              <TableHead className="font-semibold">Rating</TableHead>
+              <TableHead className="font-semibold">Comment</TableHead>
+              <TableHead className="font-semibold">Product</TableHead>
+              <TableHead className="font-semibold">Date</TableHead>
+              <TableHead className="font-semibold text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {reviews.map((review) => (
-              <TableRow key={review.id}>
+              <TableRow key={review.id} className="hover:bg-muted/50 transition-colors">
                 <TableCell className="font-medium">{review.user.name}</TableCell>
                 <TableCell>
                   <StarRating rating={review.rating} readOnly size="sm" />
@@ -76,7 +81,7 @@ export default async function AdminReviewsPage({ searchParams }) {
                 <TableCell>{new Date(review.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <form action={deleteReview.bind(null, review.id)}>
-                    <Button variant="ghost" size="icon" className="text-destructive">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </form>

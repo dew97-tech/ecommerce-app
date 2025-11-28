@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
 import {
     Pagination,
     PaginationContent,
@@ -54,10 +53,10 @@ export default async function AdminBlogsPage({ searchParams }) {
         </Link>
       </div>
 
-      <Card className="border-0 shadow-lg">
+      <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
               <TableHead className="font-semibold">Title</TableHead>
               <TableHead className="font-semibold">Author</TableHead>
               <TableHead className="font-semibold">Created At</TableHead>
@@ -74,7 +73,7 @@ export default async function AdminBlogsPage({ searchParams }) {
               </TableRow>
             ) : (
               blogs.map((blog) => (
-                <TableRow key={blog.id} className="hover:bg-accent/50">
+                <TableRow key={blog.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium">{blog.title}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">{blog.author.name}</Badge>
@@ -85,13 +84,13 @@ export default async function AdminBlogsPage({ searchParams }) {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/admin/blogs/${blog.id}`}>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <Edit className="h-3 w-3" /> Edit
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-primary">
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </Link>
                       <form action={deleteBlog.bind(null, blog.id)}>
-                        <Button variant="destructive" size="sm" className="gap-2">
-                          <Trash2 className="h-3 w-3" /> Delete
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </form>
                     </div>
@@ -101,7 +100,7 @@ export default async function AdminBlogsPage({ searchParams }) {
             )}
           </TableBody>
         </Table>
-      </Card>
+      </div>
 
       {totalPages > 1 && (
         <div className="flex justify-center">

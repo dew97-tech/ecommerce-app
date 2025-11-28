@@ -22,7 +22,12 @@ export default async function BannersPage() {
 
   return (
     <div className="p-8 pt-6 space-y-8">
-      <h2 className="text-3xl font-bold tracking-tight">Banners</h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Banners</h2>
+          <p className="text-muted-foreground mt-1">Manage your homepage banners</p>
+        </div>
+      </div>
       
       <Card>
         <CardHeader>

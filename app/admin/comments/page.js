@@ -23,22 +23,27 @@ export default async function AdminCommentsPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Manage Comments</h1>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Manage Comments</h2>
+          <p className="text-muted-foreground mt-1">Moderate user comments on blogs</p>
+        </div>
+      </div>
 
-      <div className="border rounded-lg">
+      <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Comment</TableHead>
-              <TableHead>Blog Post</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="font-semibold">User</TableHead>
+              <TableHead className="font-semibold">Comment</TableHead>
+              <TableHead className="font-semibold">Blog Post</TableHead>
+              <TableHead className="font-semibold">Date</TableHead>
+              <TableHead className="font-semibold text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {comments.map((comment) => (
-              <TableRow key={comment.id}>
+              <TableRow key={comment.id} className="hover:bg-muted/50 transition-colors">
                 <TableCell className="font-medium">{comment.user.name}</TableCell>
                 <TableCell className="max-w-md truncate" title={comment.content}>
                   {comment.content}
@@ -51,7 +56,7 @@ export default async function AdminCommentsPage() {
                 <TableCell>{new Date(comment.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
                   <form action={deleteComment.bind(null, comment.id)}>
-                    <Button variant="ghost" size="icon" className="text-destructive">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </form>

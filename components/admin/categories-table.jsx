@@ -105,71 +105,73 @@ export function CategoriesTable({ categories }) {
         </div>
       )}
 
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-[50px]">
-              <Checkbox 
-                checked={allOnPageSelected}
-                onCheckedChange={toggleSelectAll}
-              />
-            </TableHead>
-            <TableHead className="font-semibold">Name</TableHead>
-            <TableHead className="font-semibold">Slug</TableHead>
-            <TableHead className="font-semibold">Products</TableHead>
-            <TableHead className="font-semibold text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {categories.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                No categories found.
-              </TableCell>
+      <div className="rounded-md border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="w-[50px]">
+                <Checkbox 
+                  checked={allOnPageSelected}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
+              <TableHead className="font-semibold">Name</TableHead>
+              <TableHead className="font-semibold">Slug</TableHead>
+              <TableHead className="font-semibold">Products</TableHead>
+              <TableHead className="font-semibold text-right">Actions</TableHead>
             </TableRow>
-          ) : (
-            categories.map((category) => (
-              <TableRow key={category.id} className="hover:bg-accent/50">
-                <TableCell>
-                  <Checkbox 
-                    checked={selectedIds.includes(category.id)}
-                    onCheckedChange={() => toggleId(category.id)}
-                  />
-                </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    {category.name}
-                    {category.isFeatured && (
-                      <Badge variant="secondary" className="text-[10px] h-5">Featured</Badge>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{category.slug}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{category._count.products} products</Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex gap-2 justify-end">
-                    <Link href={`/admin/categories/${category.id}`}>
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Edit className="h-3 w-3" /> Edit
-                      </Button>
-                    </Link>
-                    <Button 
-                        variant="destructive" 
-                        size="sm" 
-                        className="gap-2"
-                        onClick={() => handleDeleteClick(category.id)}
-                    >
-                        <Trash2 className="h-3 w-3" /> Delete
-                    </Button>
-                  </div>
+          </TableHeader>
+          <TableBody>
+            {categories.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  No categories found.
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              categories.map((category) => (
+                <TableRow key={category.id} className="hover:bg-muted/50 transition-colors">
+                  <TableCell>
+                    <Checkbox 
+                      checked={selectedIds.includes(category.id)}
+                      onCheckedChange={() => toggleId(category.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {category.name}
+                      {category.isFeatured && (
+                        <Badge variant="secondary" className="text-[10px] h-5">Featured</Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{category.slug}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{category._count.products} products</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex gap-2 justify-end">
+                      <Link href={`/admin/categories/${category.id}`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-primary">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 hover:text-destructive"
+                          onClick={() => handleDeleteClick(category.id)}
+                      >
+                          <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

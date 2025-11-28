@@ -56,7 +56,7 @@ export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-card">
+    <div className="flex h-full w-full flex-col bg-card">
       <div className="p-6">
         <Link href="/admin" className="flex items-center">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
