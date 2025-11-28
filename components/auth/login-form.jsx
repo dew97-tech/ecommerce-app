@@ -4,12 +4,42 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { authenticate } from '@/lib/actions'
+import { signIn } from 'next-auth/react'
 import Link from 'next/link'
-import { useActionState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export function LoginForm() {
-  const [errorMessage, dispatch, isPending] = useActionState(authenticate, undefined)
+  const [error, setError] = useState("")
+  const [isPending, setIsPending] = useState(false)
+  const router = useRouter()
+
+  const handleSubmit = async (formData) => {
+    setIsPending(true)
+    setError("")
+    
+    const email = formData.get('email')
+    const password = formData.get('password')
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError("Invalid credentials.")
+        setIsPending(false)
+      } else if (result?.ok) {
+        router.refresh()
+        router.push('/')
+      }
+    } catch (e) {
+      setError("An unexpected error occurred.")
+      setIsPending(false)
+    }
+  }
 
   return (
     <Card className="w-[350px]">
@@ -18,7 +48,7 @@ export function LoginForm() {
         <CardDescription>Enter your credentials to access your account.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={dispatch} className="space-y-4">
+        <form action={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input id="email" name="email" type="email" placeholder="m@example.com" required />
@@ -28,7 +58,7 @@ export function LoginForm() {
             <Input id="password" name="password" type="password" required />
           </div>
           <div aria-live="polite" aria-atomic="true">
-            {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
           <Button className="w-full" type="submit" disabled={isPending}>
             {isPending ? 'Logging in...' : 'Login'}
