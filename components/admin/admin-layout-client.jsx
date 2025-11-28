@@ -1,6 +1,7 @@
 'use client'
 
 import { Sidebar } from '@/components/admin/sidebar'
+import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
@@ -58,10 +59,6 @@ export function AdminLayoutClient({ children }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-
-import { ModeToggle } from "@/components/mode-toggle"
-
-// ... inside AdminLayoutClient
 
           <div className="ml-auto flex items-center gap-4">
             <ModeToggle />

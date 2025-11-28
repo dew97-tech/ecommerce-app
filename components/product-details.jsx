@@ -23,28 +23,9 @@ export function ProductDetails({ product }) {
   const descriptionData = parseProductData(product.description)
   
   // Handle description: if it's an object, join values, otherwise use as string
-  let descriptionHtml = product.description
-
-  if (typeof descriptionData === 'object' && descriptionData !== null) {
-    descriptionHtml = Object.values(descriptionData).join('<br/><br/>')
-  } else if (typeof descriptionData === 'string') {
-    // Fallback for failed parsing but looks like JSON/Dict
-    let cleaned = descriptionData.trim()
-    if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
-      // Remove outer braces
-      cleaned = cleaned.slice(1, -1)
-      // If it looks like 'Key': 'Value', try to extract the value
-      // This is a rough heuristic for the specific issue seen
-      const parts = cleaned.split("': '")
-      if (parts.length > 1) {
-         // Take the last part and remove trailing quote
-         descriptionHtml = parts[parts.length - 1].replace(/'$/, '')
-      } else {
-         // Just return the cleaned string without braces
-         descriptionHtml = cleaned
-      }
-    }
-  }
+  const descriptionHtml = typeof descriptionData === 'object' && descriptionData !== null
+    ? Object.values(descriptionData).join('<br/><br/>')
+    : product.description
 
   // Parse short description for Key Features
   const keyFeatures = product.shortDescription 
@@ -109,7 +90,7 @@ export function ProductDetails({ product }) {
                 >
                     <div className="flex items-start gap-3">
                         <div className={`mt-1 h-4 w-4 rounded-full border border-primary flex items-center justify-center ${paymentMethod === 'cash' ? 'bg-primary' : ''}`}>
-                            {paymentMethod === 'cash' && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            {paymentMethod === 'cash' && <div className="h-1.5 w-1.5 rounded-full bg-background" />}
                         </div>
                         <div>
                             <div className="font-bold text-xl">৳{currentPrice.toLocaleString()}</div>
@@ -124,7 +105,7 @@ export function ProductDetails({ product }) {
                 >
                     <div className="flex items-start gap-3">
                         <div className={`mt-1 h-4 w-4 rounded-full border border-primary flex items-center justify-center ${paymentMethod === 'emi' ? 'bg-primary' : ''}`}>
-                            {paymentMethod === 'emi' && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            {paymentMethod === 'emi' && <div className="h-1.5 w-1.5 rounded-full bg-background" />}
                         </div>
                         <div>
                             <div className="font-bold text-xl">৳{Math.round(regularPrice / 12).toLocaleString()}/month</div>
@@ -189,23 +170,34 @@ export function ProductDetails({ product }) {
                     </div>
                     {specifications && typeof specifications === 'object' ? (
                         <div className="divide-y">
-                            {Object.entries(specifications).map(([category, specs], idx) => (
-                                <div key={idx} className="p-0">
-                                    <div className="bg-muted/30 px-6 py-3 font-semibold text-primary/80 text-sm uppercase tracking-wider">
-                                        {category}
-                                    </div>
-                                    <div className="divide-y">
-                                        {typeof specs === 'object' ? Object.entries(specs).map(([key, value], i) => (
-                                            <div key={i} className="grid grid-cols-1 md:grid-cols-3 px-6 py-4 hover:bg-muted/5 transition-colors">
-                                                <div className="font-medium text-muted-foreground md:col-span-1">{key}</div>
-                                                <div className="md:col-span-2 text-sm md:text-base">{value}</div>
+                            {Object.entries(specifications).map(([key, value], idx) => {
+                                // Check if the value is an object (nested category)
+                                if (typeof value === 'object' && value !== null) {
+                                    return (
+                                        <div key={idx} className="p-0">
+                                            <div className="bg-muted/30 px-6 py-3 font-semibold text-primary/80 text-sm uppercase tracking-wider">
+                                                {key}
                                             </div>
-                                        )) : (
-                                            <div className="px-6 py-4">{String(specs)}</div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                            <div className="divide-y">
+                                                {Object.entries(value).map(([subKey, subValue], i) => (
+                                                    <div key={i} className="grid grid-cols-1 md:grid-cols-3 px-6 py-4 hover:bg-muted/5 transition-colors">
+                                                        <div className="font-medium text-muted-foreground md:col-span-1">{subKey}</div>
+                                                        <div className="md:col-span-2 text-sm md:text-base">{String(subValue)}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )
+                                } else {
+                                    // Flat key-value pair
+                                    return (
+                                        <div key={idx} className="grid grid-cols-1 md:grid-cols-3 px-6 py-4 hover:bg-muted/5 transition-colors">
+                                            <div className="font-medium text-muted-foreground md:col-span-1">{key}</div>
+                                            <div className="md:col-span-2 text-sm md:text-base">{String(value)}</div>
+                                        </div>
+                                    )
+                                }
+                            })}
                         </div>
                     ) : (
                         <div className="p-6 text-muted-foreground">No specifications available.</div>
