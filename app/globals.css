@@ -1,36 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  /* User provided palette */
-  --background: #F9F8F6;      /* Lightest */
-  --foreground: #333333;      /* Dark text for contrast */
+  /* TechNexus Blue Palette */
+  --background: #FFFFFF;      /* Clean White */
+  --foreground: #0F172A;      /* Slate 900 - Deep dark blue-gray for text */
   
-  --primary: #C9B59C;         /* Darker Accent */
-  --primary-foreground: #000000; /* Black text on primary for better contrast */
+  --primary: #00A9FF;         /* User's Vivid Blue */
+  --primary-foreground: #FFFFFF; /* White text on primary */
   
-  --secondary: #EFE9E3;       /* Light beige */
-  --secondary-foreground: #333333;
+  --secondary: #CDF5FD;       /* User's Very Pale Blue */
+  --secondary-foreground: #005F99; /* Dark blue for contrast */
   
-  --accent: #D9CFC7;          /* Medium Light */
-  --accent-foreground: #333333;
+  --accent: #E0F7FA;          /* Light Cyan tint */
+  --accent-foreground: #0F172A;
   
-  --card: #FFFFFF;            /* Keep cards white for clean look, or use #EFE9E3 if preferred. Let's stick to white for "Startech" clean look */
-  --card-foreground: #333333;
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
   
   --popover: #FFFFFF;
-  --popover-foreground: #333333;
+  --popover-foreground: #0F172A;
   
-  --muted: #EFE9E3;
-  --muted-foreground: #666666;
+  --muted: #F8FAFC;           /* Slate 50 */
+  --muted-foreground: #64748B; /* Slate 500 */
   
-  --border: #D9CFC7;
+  --border: #E2E8F0;          /* Slate 200 */
   --input: #FFFFFF;
-  --ring: #C9B59C;
+  --ring: #00A9FF;
   
-  --destructive: #ef4444;     /* Red for delete actions */
-  --destructive-foreground: #ffffff;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
 
-  --radius: 0.5rem;           /* Slightly sharper corners for tech look */
+  --radius: 0.5rem;
 }
 
 @theme inline {

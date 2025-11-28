@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { signIn } from 'next-auth/react'
@@ -42,34 +41,49 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-[350px]">
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>Enter your credentials to access your account.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form action={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="m@example.com" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
-          </div>
-          <div aria-live="polite" aria-atomic="true">
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </div>
-          <Button className="w-full" type="submit" disabled={isPending}>
-            {isPending ? 'Logging in...' : 'Login'}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link>
+    <div className="grid gap-6">
+      <div className="grid gap-2 text-center">
+        <h1 className="text-3xl font-bold">Login</h1>
+        <p className="text-balance text-muted-foreground">
+          Enter your email below to login to your account
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+      <form action={handleSubmit} className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="m@example.com"
+            required
+          />
+        </div>
+        <div className="grid gap-2">
+          <div className="flex items-center">
+            <Label htmlFor="password">Password</Label>
+            <Link
+              href="/forgot-password"
+              className="ml-auto inline-block text-sm underline"
+            >
+              Forgot your password?
+            </Link>
+          </div>
+          <Input id="password" name="password" type="password" required />
+        </div>
+        
+        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? 'Logging in...' : 'Login'}
+        </Button>
+      </form>
+      <div className="mt-4 text-center text-sm">
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className="underline">
+          Sign up
+        </Link>
+      </div>
+    </div>
   )
 }

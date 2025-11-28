@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Clock, Facebook, Instagram, Mail, MapPin, Package, Phone, Twitter } from "lucide-react"
+import { Clock, Facebook, Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -42,11 +42,10 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-primary flex items-center gap-2">
-              <Package className="h-6 w-6" />
-              BD Shop
+              TechNexus
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Your trusted online marketplace in Bangladesh. Discover quality products at competitive prices with fast delivery across the country.
+              Your trusted online marketplace for premium tech gear. Discover quality products at competitive prices with fast delivery.
             </p>
             <div className="flex gap-3">
               <Button variant="outline" size="icon" className="rounded-full hover:bg-primary hover:text-primary-foreground transition-colors border-border/50">
@@ -113,7 +112,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 flex-shrink-0" />
-                <span>support@bdshop.com</span>
+                <span>support@technexus.com</span>
               </div>
             </div>
 
@@ -139,7 +138,7 @@ export function Footer() {
         <Separator className="my-8 bg-border" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} BD Shop. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} TechNexus. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
             <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
