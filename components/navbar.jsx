@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useCartStore } from "@/store/useCartStore"
 import { BookOpen, Grid3x3, LayoutDashboard, LogOut, Menu, Package, Search, ShoppingCart, User, UserCircle } from "lucide-react"
@@ -10,6 +9,7 @@ import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { MultiCategoryMenu, SingleCategoryMenu } from "./layout/mega-menu"
+import { SearchBar } from "./search-bar"
 
 export function Navbar({ categoryData }) {
   const items = useCartStore((state) => state.items)
@@ -39,18 +39,8 @@ export function Navbar({ categoryData }) {
           </Link>
 
           {/* Search Bar - Hidden on mobile, visible on md+ */}
-          <div className="hidden md:flex flex-1 max-w-2xl mx-8 relative">
-            <Input
-              type="search"
-              placeholder="Search for products, brands and more..."
-              className="w-full pl-4 pr-12 h-11 bg-input border-border focus-visible:ring-primary/20 rounded-lg"
-            />
-            <Button 
-              size="icon" 
-              className="absolute right-0 top-0 h-11 w-11 rounded-l-none rounded-r-lg bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
+          <div className="hidden md:flex flex-1 mx-8 justify-center">
+            <SearchBar />
           </div>
 
           {/* Actions */}
