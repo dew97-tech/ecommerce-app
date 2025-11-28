@@ -23,9 +23,28 @@ export function ProductDetails({ product }) {
   const descriptionData = parseProductData(product.description)
   
   // Handle description: if it's an object, join values, otherwise use as string
-  const descriptionHtml = typeof descriptionData === 'object' && descriptionData !== null
-    ? Object.values(descriptionData).join('<br/><br/>')
-    : product.description
+  let descriptionHtml = product.description
+
+  if (typeof descriptionData === 'object' && descriptionData !== null) {
+    descriptionHtml = Object.values(descriptionData).join('<br/><br/>')
+  } else if (typeof descriptionData === 'string') {
+    // Fallback for failed parsing but looks like JSON/Dict
+    let cleaned = descriptionData.trim()
+    if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
+      // Remove outer braces
+      cleaned = cleaned.slice(1, -1)
+      // If it looks like 'Key': 'Value', try to extract the value
+      // This is a rough heuristic for the specific issue seen
+      const parts = cleaned.split("': '")
+      if (parts.length > 1) {
+         // Take the last part and remove trailing quote
+         descriptionHtml = parts[parts.length - 1].replace(/'$/, '')
+      } else {
+         // Just return the cleaned string without braces
+         descriptionHtml = cleaned
+      }
+    }
+  }
 
   // Parse short description for Key Features
   const keyFeatures = product.shortDescription 
@@ -164,7 +183,7 @@ export function ProductDetails({ product }) {
             </TabsList>
 
             <TabsContent value="specification" className="mt-0">
-                <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+                <div className="bg-card rounded-lg border shadow-sm overflow-hidden">
                     <div className="p-6 border-b bg-muted/10">
                         <h3 className="text-xl font-bold">Specification</h3>
                     </div>
@@ -195,17 +214,17 @@ export function ProductDetails({ product }) {
             </TabsContent>
 
             <TabsContent value="description" className="mt-0">
-                <div className="bg-white rounded-lg border shadow-sm p-8">
+                <div className="bg-card rounded-lg border shadow-sm p-8">
                     <h3 className="text-xl font-bold mb-4">Description</h3>
                     <div 
-                        className="prose prose-sm max-w-none text-muted-foreground leading-relaxed"
+                        className="prose prose-sm max-w-none text-muted-foreground leading-relaxed dark:prose-invert"
                         dangerouslySetInnerHTML={{ __html: descriptionHtml }} 
                     />
                 </div>
             </TabsContent>
 
             <TabsContent value="reviews" className="mt-0">
-                <div className="bg-white rounded-lg border shadow-sm p-8">
+                <div className="bg-card rounded-lg border shadow-sm p-8">
                     <div className="flex items-center gap-4 mb-8">
                         <div>
                             <h3 className="text-xl font-bold">Reviews ({product.reviews?.length || 0})</h3>

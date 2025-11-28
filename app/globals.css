@@ -23,7 +23,7 @@
   --muted: #F8FAFC;           /* Slate 50 */
   --muted-foreground: #64748B; /* Slate 500 */
   
-  --border: #E2E8F0;          /* Slate 200 */
+  --border: #CBD5E1;          /* Slate 300 - Darker for better contrast */
   --input: #FFFFFF;
   --ring: #00A9FF;
   
@@ -31,6 +31,37 @@
   --destructive-foreground: #FFFFFF;
 
   --radius: 0.5rem;
+}
+
+.dark {
+  /* TechNexus Dark Mode */
+  --background: #020817;      /* Very dark slate/blue */
+  --foreground: #F8FAFC;      /* Slate 50 */
+
+  --primary: #00A9FF;         /* Keep vivid blue */
+  --primary-foreground: #FFFFFF;
+
+  --secondary: #1E293B;       /* Slate 800 */
+  --secondary-foreground: #F8FAFC;
+
+  --accent: #1E293B;          /* Slate 800 */
+  --accent-foreground: #F8FAFC;
+
+  --card: #0F172A;            /* Slate 900 */
+  --card-foreground: #F8FAFC;
+
+  --popover: #0F172A;
+  --popover-foreground: #F8FAFC;
+
+  --muted: #1E293B;           /* Slate 800 */
+  --muted-foreground: #94A3B8; /* Slate 400 */
+
+  --border: #1E293B;          /* Slate 800 */
+  --input: #1E293B;
+  --ring: #00A9FF;
+
+  --destructive: #7F1D1D;     /* Darker Red */
+  --destructive-foreground: #F8FAFC;
 }
 
 @theme inline {

@@ -105,7 +105,7 @@ export function CategoriesTable({ categories }) {
         </div>
       )}
 
-      <div className="rounded-md border bg-card">
+      <div className="rounded-md bg-card shadow-sm">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">

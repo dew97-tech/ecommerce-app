@@ -52,7 +52,7 @@ export default async function ProductsPage(props) {
         </Link>
       </div>
       
-      <div className="rounded-md border bg-card">
+      <div className="rounded-md bg-card shadow-sm">
         <div className="p-4 flex items-center justify-between border-b">
           <h3 className="font-semibold flex items-center gap-2">
             <Package className="h-5 w-5" />

@@ -8,8 +8,8 @@ export function Providers({ children, session }) {
     <SessionProvider session={session}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="light"
-        forcedTheme="light"
+        defaultTheme="system"
+        enableSystem
         disableTransitionOnChange
       >
         {children}

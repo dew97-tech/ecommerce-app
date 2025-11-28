@@ -1,5 +1,6 @@
 'use client'
 
+import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -58,6 +59,8 @@ export function Navbar({ categoryData }) {
               </Button>
             </Link>
             
+            <ModeToggle />
+
             {isMounted && session ? (
                <DropdownMenu>
                  <DropdownMenuTrigger asChild>
@@ -101,11 +104,16 @@ export function Navbar({ categoryData }) {
                  </DropdownMenuContent>
                </DropdownMenu>
             ) : isMounted && !session ? (
-               <Link href="/login">
-                 <Button className="font-semibold bg-primary text-primary-foreground hover:bg-primary/90">
-                    Login
-                 </Button>
-               </Link>
+               <div className="flex items-center gap-2">
+                 <Link href="/login">
+                   <Button variant="ghost" size="sm">
+                      Log in
+                   </Button>
+                 </Link>
+                 <Link href="/signup">
+                   <Button size="sm">Sign up</Button>
+                 </Link>
+               </div>
             ) : (
               <Button variant="ghost" size="icon">
                 <User className="h-5 w-5" />

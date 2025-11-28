@@ -51,7 +51,7 @@ export default async function AdminReviewsPage({ searchParams }) {
         </div>
       </div>
 
-      <div className="rounded-md border bg-card mb-6">
+      <div className="rounded-md bg-card shadow-sm mb-6">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
