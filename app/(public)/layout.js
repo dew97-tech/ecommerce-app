@@ -66,7 +66,7 @@ export default async function PublicLayout({ children }) {
     <div className="flex min-h-screen flex-col">
       <Navbar categoryData={categoryData} />
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer categories={categoryData} />
     </div>
   )
 }

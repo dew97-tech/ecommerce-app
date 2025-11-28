@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 
-export function Footer() {
+export function Footer({ categories = [] }) {
   const [email, setEmail] = useState('')
 
   const handleSubscribe = (e) => {
@@ -19,13 +19,9 @@ export function Footer() {
     }
   }
 
-  const categories = [
-    { name: "Electronics", href: "/categories" },
-    { name: "Fashion", href: "/categories" },
-    { name: "Home & Living", href: "/categories" },
-    { name: "Sports", href: "/categories" },
-    { name: "Books", href: "/categories" },
-  ]
+  // Use passed categories or fallback to empty array
+  // Take top 6 for display
+  const displayCategories = categories.slice(0, 6)
 
   const quickLinks = [
     { name: "About Us", href: "/about" },
@@ -81,16 +77,18 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Categories</h4>
             <ul className="space-y-2">
-              {categories.map((category) => (
-                <li key={category.name}>
+            <ul className="space-y-2">
+              {displayCategories.map((category) => (
+                <li key={category.id}>
                   <Link 
-                    href={category.href}
+                    href={`/categories/${category.id}`}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {category.name}
                   </Link>
                 </li>
               ))}
+            </ul>
             </ul>
           </div>
 
