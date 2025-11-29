@@ -65,6 +65,8 @@ model Product {
   stock           Int         @default(0)
   isTrending      Boolean     @default(false)
   images          String      @db.Text // Stored as JSON string
+  attributes      Json?       // Dynamic attributes like { "RAM": "16GB", "Color": "Black" }
+  availabilityStatus String?  @default("IN_STOCK") // IN_STOCK, OUT_OF_STOCK, PRE_ORDER, UP_COMING
   categoryId      String?
   category        Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   variants        Variant[]

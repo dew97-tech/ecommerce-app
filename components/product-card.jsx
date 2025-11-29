@@ -62,10 +62,9 @@ export function ProductCard({ product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      whileHover={{ y: -5 }}
       className="h-full"
     >
-      <Card className="overflow-hidden group h-full flex flex-col border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 bg-card rounded-xl">
+      <Card className="overflow-hidden group h-full flex flex-col border border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 bg-card rounded-xl hover:-translate-y-1">
         <Link href={`/products/${product.slug}`} className="block relative aspect-square overflow-hidden bg-white p-4">
           <Image
             src={displayImage}
@@ -111,7 +110,6 @@ export function ProductCard({ product }) {
           <Button 
             className="w-full gap-2 shadow-none hover:shadow-md transition-all duration-300 bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground border border-border/50" 
             onClick={handleAddToCart}
-            variant="outline"
           >
             <ShoppingCart className="h-4 w-4" />
             Add to Cart

@@ -23,7 +23,7 @@
   --muted: #F8FAFC;           /* Slate 50 */
   --muted-foreground: #64748B; /* Slate 500 */
   
-  --border: #CBD5E1;          /* Slate 300 - Darker for better contrast */
+  --border: #94A3B8;          /* Slate 400 - Darker for better contrast */
   --input: #FFFFFF;
   --ring: #00A9FF;
   
@@ -85,6 +85,18 @@
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0 }
+    to { height: var(--radix-accordion-content-height) }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height) }
+    to { height: 0 }
+  }
 }
 
 /* Glassmorphism utility */

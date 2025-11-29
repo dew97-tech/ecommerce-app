@@ -15,14 +15,12 @@ fi
 echo ""
 echo "[2/4] Setting up Database (Migrations & Seeding)..."
 echo "Attempting to connect to MySQL at localhost:3306..."
-# Use --accept-data-loss to automate schema updates
-npx prisma db push --accept-data-loss
+# Remove --accept-data-loss to prevent accidental data loss
+npx prisma db push
 if [ $? -ne 0 ]; then
     echo ""
-    echo "[ERROR] Failed to connect to the database."
-    echo "Please ensure:"
-    echo "1. MySQL Server is installed and RUNNING."
-    echo "2. The credentials in .env are correct."
+    echo "[ERROR] Failed to connect to the database or schema conflict."
+    echo "Please check the error message above."
     echo ""
     exit 1
 fi
@@ -31,15 +29,24 @@ echo "Creating Admin User..."
 node promote-admin.js
 
 if [ -f ".seeded" ]; then
-    echo "Data already seeded. Skipping to prevent re-insertion of deleted items..."
+    echo "Data already seeded. Skipping..."
 else
     echo "Seeding StarTech Data (This may take a while)..."
     node seed-startech.js
     if [ $? -eq 0 ]; then
         touch .seeded
-        echo "Seeding completed. Created .seeded marker file."
-    else
-        echo "Seeding failed. Will retry next time."
+        echo "Seeding completed."
+    fi
+fi
+
+if [ -f ".specs-migrated" ]; then
+    echo "Specs already migrated. Skipping..."
+else
+    echo "Migrating Specifications to Attributes..."
+    node scripts/migrate-specs.js
+    if [ $? -eq 0 ]; then
+        touch .specs-migrated
+        echo "Migration completed."
     fi
 fi
 
