@@ -33,11 +33,15 @@ export const authConfig = {
       if (token.role && session.user) {
         session.user.role = token.role;
       }
+      if (token.image && session.user) {
+        session.user.image = token.image;
+      }
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
+        token.image = user.image;
       }
       return token;
     }

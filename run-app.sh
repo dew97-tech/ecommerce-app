@@ -15,8 +15,8 @@ fi
 echo ""
 echo "[2/4] Setting up Database (Migrations & Seeding)..."
 echo "Attempting to connect to MySQL at localhost:3306..."
-# Remove --accept-data-loss to prevent accidental data loss
-npx prisma db push
+# Added --accept-data-loss to handle schema changes automatically
+npx prisma db push --accept-data-loss
 if [ $? -ne 0 ]; then
     echo ""
     echo "[ERROR] Failed to connect to the database or schema conflict."

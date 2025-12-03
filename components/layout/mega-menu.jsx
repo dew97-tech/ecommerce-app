@@ -171,7 +171,7 @@ export function SingleCategoryMenu({ category }) {
         onMouseLeave={() => handleOpenChange(false)}
     >
       <Link 
-        href={`/categories/${category.slug}`} // Assuming category page exists or filter
+        href={`/categories/${category.id}?sort=newest&page=1`}
         className={cn(
             "text-muted-foreground hover:text-primary transition-colors h-full flex items-center px-1 relative",
             isOpen && "text-primary"

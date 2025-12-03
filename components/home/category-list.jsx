@@ -3,13 +3,17 @@
 import { FadeIn } from "@/components/animations/fade-in"
 import { motion } from "framer-motion"
 import {
+    AppWindow,
     Camera,
+    Cpu,
+    Gamepad2,
     Grid3x3,
     Headphones,
     Keyboard,
     Laptop,
     Monitor,
     Mouse,
+    Printer,
     Smartphone,
     Speaker,
     Tablet,
@@ -32,6 +36,11 @@ const getCategoryIcon = (name) => {
   if (lowerName.includes('mouse')) return <Mouse className="h-8 w-8" />
   if (lowerName.includes('tv') || lowerName.includes('television')) return <Tv className="h-8 w-8" />
   if (lowerName.includes('tablet') || lowerName.includes('ipad')) return <Tablet className="h-8 w-8" />
+  if (lowerName.includes('processor') || lowerName.includes('cpu')) return <Cpu className="h-8 w-8" />
+  if (lowerName.includes('gaming') || lowerName.includes('game')) return <Gamepad2 className="h-8 w-8" />
+  if (lowerName.includes('printer')) return <Printer className="h-8 w-8" />
+  if (lowerName.includes('software')) return <AppWindow className="h-8 w-8" />
+  if (lowerName.includes('gpu') || lowerName.includes('graphics')) return <Cpu className="h-8 w-8" /> // Use CPU icon for GPU as generic chip
   
   return <Grid3x3 className="h-8 w-8" />
 }
@@ -42,20 +51,18 @@ export function CategoryList({ categories }) {
   return (
     <div className="space-y-8">
       <FadeIn>
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-primary/10 rounded-2xl backdrop-blur-sm">
-            <Grid3x3 className="h-8 w-8 text-primary" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-2 bg-primary rounded-full" />
+             <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Top Categories</h2>
           </div>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              Shop by Category
-            </h2>
-            <p className="text-muted-foreground">Browse our wide range of collections</p>
-          </div>
+          <Link href="/categories" className="text-sm font-medium text-primary hover:underline underline-offset-4">
+            See all categories
+          </Link>
         </div>
       </FadeIn>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
         {categories.map((category, index) => (
           <motion.div
             key={category.id}
@@ -66,11 +73,11 @@ export function CategoryList({ categories }) {
             whileTap={{ scale: 0.98 }}
           >
             <Link href={`/categories/${category.id}`}>
-              <div className="bg-card hover:border-primary/50 border border-border/50 rounded-xl p-6 flex flex-col items-center justify-center gap-4 shadow-sm hover:shadow-md transition-all duration-300 group h-full">
-                <div className="p-4 bg-secondary/30 rounded-full group-hover:bg-primary/10 transition-colors duration-300 text-primary">
+              <div className="bg-card hover:border-primary border border-border/40 rounded-xl p-4 flex flex-col items-center justify-center gap-3 shadow-sm hover:shadow-lg transition-all duration-300 group h-full">
+                <div className="p-3 bg-primary/5 rounded-lg group-hover:bg-primary/10 transition-colors duration-300 text-primary/80 group-hover:text-primary">
                   {getCategoryIcon(category.name)}
                 </div>
-                <span className="font-medium text-sm text-center group-hover:text-primary transition-colors">
+                <span className="font-medium text-sm text-center text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1">
                   {category.name}
                 </span>
               </div>

@@ -5,6 +5,8 @@ import { Separator } from "@/components/ui/separator"
 import { db } from "@/lib/db"
 import { Calendar, CreditCard, MapPin, Package } from "lucide-react"
 import { redirect } from "next/navigation"
+import { DeleteOrderButton } from "./delete-order-button"
+import { PayNowButton } from "./pay-now-button"
 
 export default async function OrdersPage() {
   const session = await auth()
@@ -28,9 +30,20 @@ export default async function OrdersPage() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'PENDING': return 'secondary'
-      case 'PROCESSING': return 'default'
+      case 'PROCESSING': return 'default' // blue/primary
       case 'SHIPPED': return 'default'
-      case 'DELIVERED': return 'default'
+      case 'DELIVERED': return 'success' // green
+      case 'CANCELLED': return 'destructive'
+      case 'FAILED': return 'destructive'
+      default: return 'secondary'
+    }
+  }
+
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case 'PAID': return 'success' // green
+      case 'PENDING': return 'warning' // yellow/orange
+      case 'FAILED': return 'destructive' // red
       case 'CANCELLED': return 'destructive'
       default: return 'secondary'
     }
@@ -55,17 +68,24 @@ export default async function OrdersPage() {
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
-              <Card key={order.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="flex items-center gap-3">
-                        Order #{order.id.slice(0, 8).toUpperCase()}
-                        <Badge variant={getStatusColor(order.status)}>
+              <Card key={order.id} className="border-0 shadow-lg hover:shadow-xl transition-shadow overflow-hidden">
+                <CardHeader className="bg-accent/10 pb-4">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <CardTitle className="text-lg">
+                          Order #{order.id.slice(0, 8).toUpperCase()}
+                        </CardTitle>
+                        <Badge variant={getStatusColor(order.status)} className="uppercase">
                           {order.status}
                         </Badge>
-                      </CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {order.paymentStatus && order.paymentStatus !== 'PENDING' && (
+                           <Badge variant={getPaymentStatusColor(order.paymentStatus)} className="uppercase">
+                             {order.paymentStatus}
+                           </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           {new Date(order.createdAt).toLocaleDateString()}
@@ -76,44 +96,58 @@ export default async function OrdersPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Total Amount</p>
-                      <p className="text-2xl font-bold text-primary">৳{order.totalAmount.toLocaleString()}</p>
+                    <div className="text-right flex flex-col items-end gap-2">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Amount</p>
+                        <p className="text-2xl font-bold text-primary">৳{order.totalAmount.toLocaleString()}</p>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {/* Show Pay Now button if order is pending and not paid */}
+                        {(order.status === 'PENDING' || order.status === 'FAILED') && order.paymentStatus !== 'PAID' && (
+                          <PayNowButton orderId={order.id} amount={order.totalAmount} />
+                        )}
+
+                        {/* Show Delete button if order is pending, failed or cancelled */}
+                        {(order.status === 'PENDING' || order.status === 'FAILED' || order.status === 'CANCELLED') && (
+                          <DeleteOrderButton orderId={order.id} />
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
                 
-                <Separator />
-                
                 <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-2 text-sm">
-                      <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">Shipping Address</p>
-                        <p className="text-muted-foreground">{order.shippingAddress}</p>
-                      </div>
-                    </div>
-
-                    <Separator />
-
+                  <div className="space-y-6">
+                    {/* Order Items */}
                     <div>
-                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
                         <Package className="h-4 w-4" />
-                        Order Items ({order.orderItems.length})
+                        Items
                       </h4>
                       <div className="space-y-3">
                         {order.orderItems.map((item) => (
-                          <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg bg-accent/30">
+                          <div key={item.id} className="flex items-center gap-4 p-3 rounded-lg bg-accent/30 hover:bg-accent/50 transition-colors">
                             <div className="flex-1">
                               <p className="font-medium">{item.product.name}</p>
                               <p className="text-sm text-muted-foreground">
-                                Quantity: {item.quantity} × ৳{item.priceAtPurchase.toLocaleString()}
+                                {item.quantity} × ৳{item.priceAtPurchase.toLocaleString()}
                               </p>
                             </div>
                             <p className="font-semibold">৳{(item.quantity * item.priceAtPurchase).toLocaleString()}</p>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Shipping Info */}
+                    <div className="flex items-start gap-3 text-sm bg-accent/10 p-4 rounded-lg">
+                      <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                      <div>
+                        <p className="font-semibold mb-1">Shipping Details</p>
+                        <p className="text-muted-foreground leading-relaxed">{order.shippingAddress}</p>
                       </div>
                     </div>
                   </div>

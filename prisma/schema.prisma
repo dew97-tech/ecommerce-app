@@ -26,6 +26,7 @@ model User {
   email     String   @unique
   password  String
   role      Role     @default(USER)
+  image     String?
   address   String?
   phone     String?
   createdAt DateTime @default(now())
@@ -97,6 +98,20 @@ model Order {
   status          OrderStatus @default(PENDING)
   paymentMethod   String      @default("COD")
   shippingAddress String      @db.Text
+  
+  // SSLCommerz Transaction Details
+  transactionId   String?     @unique
+  valId           String?
+  paymentStatus   String      @default("PENDING") // PENDING, PAID, FAILED, CANCELLED
+  bankTranId      String?
+  cardType        String?
+  cardNo          String?
+  cardIssuer      String?
+  cardBrand       String?
+  cardCategory    String?
+  riskLevel       Int?
+  riskTitle       String?
+
   orderItems      OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

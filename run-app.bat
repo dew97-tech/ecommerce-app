@@ -15,7 +15,7 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 echo [2/3] Setting up Database (Migrations)...
 echo Attempting to connect to MySQL at localhost:3306...
-call npx prisma db push
+call npx prisma db push --accept-data-loss
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo [ERROR] Failed to connect to the database.

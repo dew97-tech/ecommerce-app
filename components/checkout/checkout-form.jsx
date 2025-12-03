@@ -19,11 +19,24 @@ export function CheckoutForm() {
   const totalAmount = total()
 
   useEffect(() => {
-      // Ideally we should clear cart after successful redirect, but since redirect happens on server, 
-      // we can't easily clear client store from there. 
-      // We'll rely on the OrderSuccess page to clear the cart or just leave it for now.
-      // Actually, better to clear it here if we detect success, but we redirect away.
-  }, [])
+    if (state.success && state.paymentMethod === 'SSLCOMMERZ' && state.orderId) {
+      // Initiate SSLCommerz payment
+      fetch('/api/sslcommerz/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: state.orderId }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.url) {
+          window.location.href = data.url
+        } else {
+          console.error('Failed to get payment URL')
+        }
+      })
+      .catch(err => console.error('Payment init error:', err))
+    }
+  }, [state])
 
   if (items.length === 0) {
       return <p>Your cart is empty.</p>
@@ -81,13 +94,29 @@ export function CheckoutForm() {
               </div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Payment Method</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <input type="radio" id="cod" name="paymentMethod" value="COD" defaultChecked className="h-4 w-4" />
+                <Label htmlFor="cod">Cash on Delivery</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input type="radio" id="sslcommerz" name="paymentMethod" value="SSLCOMMERZ" className="h-4 w-4" />
+                <Label htmlFor="sslcommerz">Pay Online (SSLCommerz)</Label>
+              </div>
+            </CardContent>
+          </Card>
           
           <div aria-live="polite" aria-atomic="true">
             {state.message && <p className="text-red-500 text-sm">{state.message}</p>}
           </div>
 
           <Button className="w-full" size="lg" type="submit" disabled={isPending}>
-            {isPending ? 'Placing Order...' : 'Confirm Order (COD)'}
+            {isPending ? 'Processing...' : 'Place Order'}
           </Button>
         </div>
       </div>
