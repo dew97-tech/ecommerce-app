@@ -105,8 +105,8 @@ export function CheckoutForm() {
                 <Label htmlFor="cod">Cash on Delivery</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <input type="radio" id="sslcommerz" name="paymentMethod" value="SSLCOMMERZ" className="h-4 w-4" />
-                <Label htmlFor="sslcommerz">Pay Online (SSLCommerz)</Label>
+                <input type="radio" id="sslcommerz" name="paymentMethod" value="SSLCOMMERZ" disabled className="h-4 w-4 opacity-50 cursor-not-allowed" />
+                <Label htmlFor="sslcommerz" className="text-gray-500">Pay Online (SSLCommerz) - Coming Soon</Label>
               </div>
             </CardContent>
           </Card>
