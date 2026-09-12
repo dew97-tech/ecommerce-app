@@ -1,21 +1,26 @@
 # RigNexus E-Commerce
 
-Full-stack e-commerce application for computer parts and custom PC builds, built with Next.js 16 (App Router), Prisma, MySQL and Tailwind CSS v4.
+Full-stack e-commerce application for computer parts and custom PC builds, built with Next.js 16 (App Router), Prisma, MySQL and Tailwind CSS v4. Production domain: `rignexus.com.bd`.
 
 ## Features
 
-- Storefront with category browsing, product pages, search suggestions and dynamic specification filters
-- PC Builder with slot-by-slot selection, live pricing, wattage estimate and compatibility checks
-- Cart, checkout and order tracking with SSLCommerz payment integration
-- NextAuth v5 authentication with an admin dashboard for products, categories, orders, banners, blogs, comments and reviews
+- Storefront with category browsing, product pages, search suggestions, dynamic specification filters and related products
+- PC Builder with slot-by-slot selection, live pricing, wattage estimate, compatibility checks and a quotation PDF
+- Cart and checkout with server-validated stock on every add/update and atomic stock reservation inside a single transaction
+- Idempotent checkout (`checkoutToken`) so retries and resubmits cannot create duplicate orders or charges
+- SSLCommerz payments with verified success/fail/cancel/IPN callbacks and an in-flight guard against starting a second payment session
+- Order lifecycle: `PENDING -> PROCESSING -> SHIPPED -> DELIVERED`, with `FAILED` for payment failures and terminal `CANCELLED`
+- Customer order cancellation before processing begins, with a required reason and optional note; cancellations are visible to admins and stock is released automatically
+- Admin dashboard for products, categories, orders (search, KPI cards, auto-save status and cancellation reasons), banners, blogs, comments, reviews and content
 - Catalog pipeline that crawls and syncs products, specifications and images
+- Cached catalog reads (listings, facets, navigation, sitemap) backed by tuned MySQL indexes
 
 ## Tech Stack
 
 - Next.js 16 (App Router, Turbopack), React 19, JavaScript
-- Prisma 5 + MySQL
+- Prisma 5 + MySQL 8
 - Tailwind CSS v4, shadcn-style primitives, lucide-react icons
-- NextAuth v5, Zustand, zod, sonner
+- NextAuth v5 (JWT sessions), Zustand, zod, sonner
 
 ## Requirements
 
@@ -43,6 +48,12 @@ ADMIN_PASSWORD="<strong-password-min-8-chars>"
 ADMIN_NAME="Admin"
 ```
 
+Optional variables (see `.env.example` for the full list):
+
+- `GEMINI_API_KEY` — powers category tile image generation (`npm run tiles:generate`)
+- `GEMINI_TEXT_MODEL` — text model for generated article prose (default `gemini-2.5-flash`)
+- `GEMINI_BRAIN_DIR` — folder with images produced by the Gemini/Antigravity IDE (`npm run tiles:sync`)
+
 Generate a secret with:
 
 ```bash
@@ -60,22 +71,49 @@ npm run seed:specs     # flatten specifications into filterable attributes
 npm run dev
 ```
 
-For production-style migrations use `npm run db:deploy` instead of `db:push`.
+For production-style migrations use `npm run db:deploy`, which applies the committed migrations in `prisma/migrations`.
 
 ### Quick Start
 
 `run-app.bat` (Windows) and `run-app.sh` (Linux/macOS) automate install, schema push, admin bootstrap, seeding and the dev server. They use `.seeded` and `.specs-migrated` marker files to skip work that already ran. Delete a marker to run that step again.
+
+## Orders, Stock and Payments
+
+Order lifecycle and cancellation rules:
+
+- **Statuses**: `PENDING` (placed, unpaid or awaiting payment) -> `PROCESSING` -> `SHIPPED` -> `DELIVERED`. `FAILED` means the payment attempt failed; `CANCELLED` is terminal and cannot be reopened, even by an admin.
+- **Stock**: decremented atomically when an order is placed, using a guarded `updateMany` (`stock >= quantity`) inside one transaction, so two buyers can never oversell the last unit. If any line fails, the whole order rolls back and no payment is initiated.
+- **Stock release**: stock is restored when an order is cancelled before shipment (`PENDING`, `PROCESSING` or `FAILED`) by the customer, an admin or the payment gateway. `SHIPPED` and `DELIVERED` cancellations do not touch stock.
+- **Customer cancellation**: available while the order is `PENDING` or `FAILED` and unpaid. The customer must choose a reason (plus an optional note) and the cancellation appears in the admin dashboard with `cancelledBy`, `cancelledAt`, `cancellationReason` and `cancellationNote`. Once processing starts the action is disabled.
+- **Duplicate charge protection**: the checkout form carries a unique `checkoutToken`; a retry returns the existing order instead of creating another. SSLCommerz initiation is refused with `409 PAYMENT_IN_PROGRESS` while a payment session is live, and success/IPN handlers are idempotent. A payment callback for a cancelled order records the payment fields but never revives the order status.
+
+## Caching and Performance
+
+Catalog reads are cached with `unstable_cache` and invalidated by tags (`products`, `categories`, `nav`, `banners`, `blogs`, `reviews`) from the admin actions:
+
+| Layer | TTL |
+| --- | --- |
+| Listings + product counts, product detail, home | 60s |
+| Facets | 120s |
+| Navigation, category tree, blogs | 300s |
+| Sitemap (chunked to stay under the 2 MB cache entry limit) | 300s |
+
+The Product table uses composite indexes leading with `availabilityStatus, isActive` for storefront listings and sorting, plus `stock, isActive` for low-stock admin queries. After bulk catalog syncs, refresh optimizer statistics so MySQL keeps choosing the right indexes:
+
+```bash
+mysql -h 127.0.0.1 -u <user> -p ecommerce_db -e "ANALYZE TABLE Product;"
+```
 
 ## Project Structure
 
 ```
 app/                    Next.js App Router
   (auth)/               Login and signup
-  (public)/             Storefront routes
+  (public)/             Storefront routes (home, products, categories, cart, checkout, orders, blogs, PC builder)
   admin/                Admin dashboard
   api/                  Route handlers (auth, uploads, SSLCommerz)
 components/
-  admin/                Admin dashboard UI
+  admin/                Admin dashboard UI (tables, forms, dialogs, status controls)
   auth/                 Login and signup forms
   blog/                 Blog comments
   cart/                 Cart view
@@ -93,26 +131,36 @@ components/
   profile/              Profile form and avatar upload
   reviews/              Ratings and review forms
   seo/                  JSON-LD structured data
-  ui/                   shadcn-style UI primitives
+  ui/                   shadcn-style UI primitives (button, dialog, select, tooltip, ...)
 lib/
-  actions/              Server actions (admin, checkout, search, blog, reviews)
-  auth/guards.js        Admin route guard
-  catalog/              Queries, facets, specifications, nav data
+  actions/              Server actions (admin, cart, checkout, orders, search, blog, reviews)
+  auth/guards.js        Session-based guards (JWT claims, no per-action DB lookup)
+  cache/config.js       Cache tags and TTLs
+  catalog/              Listing queries and cache, facets, selects, nav data
+  content/              Blog generation and insights helpers
+  orders/stock.js       Stock restore helpers shared by checkout and cancellations
   pc-builder/           Slot definitions, compatibility rules, quotation PDF
+  security/             Rate limiting
   seo/                  Structured data helpers
   services/             SSLCommerz client, image upload
   db.js                 Prisma client singleton
-  utils.js, images.js, price.js, sanitize.js, product-parser.js, ...
+  format.js             Date, payment method and cancellation formatters
+  price.js, images.js, sanitize.js, product-parser.js, search-query.js, utils.js,
+  use-is-mounted.js, site-config.js
 prisma/                 Schema and migrations
+proxy.js                NextAuth middleware (route protection)
 public/                 Static assets and uploaded files
 scripts/
   catalog/              Crawl -> sync pipeline and diagnostics
   seed/                 Seeders and admin bootstrap
   media/                Category tiles, banners, icons
   maintenance/          Backups, migrations, data fixes
+  content/              Scheduled publishing and reporting
 store/                  Zustand stores (cart, PC builder, admin UI, category selection)
+docs/                   catalog-refresh.md, category-tiles.md, deployment-cookbook.md
 data/ backups/ reports/ Runtime artifacts, gitignored
-docs/                   Topic guides (catalog refresh, category tiles)
+run-app.bat, run-app.sh One-shot local setup scripts
+connect.bat             SSH helper for the production host
 ```
 
 ## Commands
@@ -154,6 +202,7 @@ docs/                   Topic guides (catalog refresh, category tiles)
 | `npm run catalog:sync` | Import crawl output into MySQL (dry-run by default) |
 | `npm run catalog:refresh` | Run crawl then sync |
 | `npm run catalog:audit-images` | Report products with suspect image lists |
+| `npm run catalog:filter-images` | Detect and remove polluted image entries (`-- --apply` to write) |
 | `npm run catalog:audit-sync` | Diff crawl output against the database |
 | `npm run catalog:repair-images` | Re-fetch pages and repair broken image lists |
 
@@ -173,12 +222,20 @@ See `docs/catalog-refresh.md` for flags and workflows.
 
 See `docs/category-tiles.md` for the tile workflow.
 
-### Maintenance
+### Maintenance and Content
 
 | Command | Purpose |
 | --- | --- |
 | `npm run products:clean-descriptions` | Strip scraped source links from product descriptions (`-- --dry-run`, `-- --limit=N`) |
 | `npm run content:convert` | Convert legacy Markdown blog bodies to sanitized HTML (dry-run unless `-- --apply`) |
+| `npm run content:publish` | Publish scheduled blog posts whose time has passed |
+| `npm run content:report` | Generate a content inventory report for review |
+
+## Deployment
+
+See **[docs/deployment-cookbook.md](docs/deployment-cookbook.md)** for the full production walkthrough: domain and DNS (BTCL), an ExonHost VPS, Coolify, GitHub auto-deploy, MySQL restore, persistent uploads, HTTPS and SSLCommerz go-live.
+
+At a glance: push to `master` -> Coolify builds the Nixpacks app -> `npx prisma migrate deploy` runs before release -> uploads persist at `/srv/rignexus/uploads` -> Traefik terminates HTTPS.
 
 ## Data and Artifact Folders
 

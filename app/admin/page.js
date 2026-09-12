@@ -1,4 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/admin-page-header"
+import { CancellationInfo } from "@/components/admin/cancellation-info"
 import { EmptyState } from "@/components/admin/empty-state"
 import { StatCard } from "@/components/admin/stat-card"
 import { StatusBadge } from "@/components/admin/status-badge"
@@ -343,7 +344,17 @@ export default async function AdminDashboard() {
                     <span className="text-sm font-semibold text-price">
                       ৳{order.totalAmount.toLocaleString("en-US")}
                     </span>
-                    <StatusBadge status={order.status} />
+                    <div className="flex items-center gap-1.5">
+                      <StatusBadge status={order.status} />
+                      {order.status === "CANCELLED" && (
+                        <CancellationInfo
+                          reason={order.cancellationReason}
+                          note={order.cancellationNote}
+                          cancelledBy={order.cancelledBy}
+                          cancelledAt={order.cancelledAt}
+                        />
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}

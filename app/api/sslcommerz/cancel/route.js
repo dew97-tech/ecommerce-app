@@ -1,5 +1,8 @@
 import { db } from "@/lib/db"
+import { CACHE_TAGS } from "@/lib/cache/config"
+import { restoreOrderStock } from "@/lib/orders/stock"
 import { sslcommerz } from "@/lib/services/sslcommerz"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { NextResponse } from "next/server"
 
 export async function POST(req) {
@@ -28,10 +31,28 @@ export async function POST(req) {
       order && Math.abs(Number(validationResponse.amount) - order.totalAmount) < 0.01
 
     if (order && order.status === 'PENDING' && order.paymentStatus !== 'PAID' && amountMatches) {
-      await db.order.update({
-        where: { id: order.id },
-        data: { status: 'CANCELLED', paymentStatus: 'CANCELLED', valId: val_id },
+      await db.$transaction(async (tx) => {
+        const updated = await tx.order.updateMany({
+          where: { id: order.id, status: 'PENDING', paymentStatus: { not: 'PAID' } },
+          data: {
+            status: 'CANCELLED',
+            paymentStatus: 'CANCELLED',
+            valId: val_id,
+            cancellationReason: 'Payment cancelled at gateway',
+            cancelledBy: 'CUSTOMER',
+            cancelledAt: new Date(),
+          },
+        })
+
+        if (updated.count === 0) return
+
+        await restoreOrderStock(tx, order.id)
       })
+
+      revalidatePath("/orders")
+      revalidatePath("/admin/orders")
+      revalidatePath("/admin")
+      revalidateTag(CACHE_TAGS.products, "max")
     }
 
     return NextResponse.redirect(`${baseUrl}/checkout?error=payment_cancelled`, 303)

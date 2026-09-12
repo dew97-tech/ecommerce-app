@@ -1,10 +1,13 @@
 import { db } from "@/lib/db";
+import { CACHE_TAGS } from "@/lib/cache/config";
 import { getCategorySubtreeCounts } from "@/lib/catalog/categories";
 import { parseImages } from "@/lib/images";
+import { unstable_cache } from "next/cache";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const SITEMAP_PRODUCT_CHUNK = 3000;
 
 const STATIC_ROUTES = [
   { path: "/", priority: 1, changeFrequency: "daily" },
@@ -19,13 +22,31 @@ const STATIC_ROUTES = [
   { path: "/privacy", priority: 0.2, changeFrequency: "yearly" },
 ];
 
-export default async function sitemap() {
-  const [categories, subtreeCounts, products, blogs] = await Promise.all([
-    db.category.findMany({
-      select: { id: true, updatedAt: true },
-      orderBy: { name: "asc" },
-    }),
-    getCategorySubtreeCounts(),
+const loadSitemapMeta = unstable_cache(
+  async () => {
+    const [categories, blogs] = await Promise.all([
+      db.category.findMany({
+        select: { id: true, updatedAt: true },
+        orderBy: { name: "asc" },
+      }),
+      db.blog.findMany({
+        where: { status: "PUBLISHED" },
+        select: { slug: true, updatedAt: true, publishedAt: true },
+        orderBy: { publishedAt: "desc" },
+      }),
+    ]);
+
+    return { categories, blogs };
+  },
+  ["sitemap-meta"],
+  {
+    tags: [CACHE_TAGS.categories, CACHE_TAGS.blogs],
+    revalidate: 300,
+  }
+);
+
+const loadSitemapProductChunk = unstable_cache(
+  async (chunkIndex) =>
     db.product.findMany({
       where: { isActive: true },
       select: {
@@ -35,12 +56,36 @@ export default async function sitemap() {
         lastSyncedAt: true,
       },
       orderBy: { id: "asc" },
+      skip: chunkIndex * SITEMAP_PRODUCT_CHUNK,
+      take: SITEMAP_PRODUCT_CHUNK,
     }),
-    db.blog.findMany({
-      where: { status: "PUBLISHED" },
-      select: { slug: true, updatedAt: true, publishedAt: true },
-      orderBy: { publishedAt: "desc" },
-    }),
+  ["sitemap-products"],
+  {
+    tags: [CACHE_TAGS.products],
+    revalidate: 300,
+  }
+);
+
+async function loadSitemapProducts() {
+  const totalCount = await db.product.count({ where: { isActive: true } });
+  const chunkCount = Math.ceil(totalCount / SITEMAP_PRODUCT_CHUNK);
+
+  if (chunkCount === 0) return [];
+
+  const chunks = await Promise.all(
+    Array.from({ length: chunkCount }, (_, index) =>
+      loadSitemapProductChunk(index)
+    )
+  );
+
+  return chunks.flat();
+}
+
+export default async function sitemap() {
+  const [{ categories, blogs }, products, subtreeCounts] = await Promise.all([
+    loadSitemapMeta(),
+    loadSitemapProducts(),
+    getCategorySubtreeCounts(),
   ]);
 
   const staticEntries = STATIC_ROUTES.map((route) => ({

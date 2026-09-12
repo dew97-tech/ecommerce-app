@@ -4,15 +4,29 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { getCartItemDetails } from '@/lib/actions/cart'
 import { placeOrder } from '@/lib/actions/checkout'
 import { useCartStore } from '@/store/useCartStore'
 import { useActionState, useEffect } from 'react'
 
-export function CheckoutForm() {
+export function CheckoutForm({ checkoutToken }) {
   const items = useCartStore((state) => state.items)
   const total = useCartStore((state) => state.total)
-  const clearCart = useCartStore((state) => state.clearCart)
+  const syncItems = useCartStore((state) => state.syncItems)
   const [state, dispatch, isPending] = useActionState(placeOrder, { message: null, errors: {} })
+
+  useEffect(() => {
+    const ids = useCartStore.getState().items.map((item) => item.id)
+    if (ids.length === 0) return
+
+    getCartItemDetails(ids)
+      .then((details) => {
+        if (details.length > 0) syncItems(details)
+      })
+      .catch((error) => {
+        console.error("Failed to refresh cart items:", error)
+      })
+  }, [syncItems])
 
 
   const itemsJson = JSON.stringify(items.map(({ id, quantity }) => ({ id, quantity })))
@@ -45,6 +59,7 @@ export function CheckoutForm() {
   return (
     <form action={dispatch}>
       <input type="hidden" name="items" value={itemsJson} />
+      <input type="hidden" name="checkoutToken" value={checkoutToken} />
       
       <div className="grid md:grid-cols-2 gap-8">
         <Card>

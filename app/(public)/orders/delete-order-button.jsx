@@ -27,7 +27,7 @@ export function DeleteOrderButton({ orderId }) {
       setOpen(false)
     } catch (error) {
       console.error("Delete error:", error)
-      toast.error("Failed to delete order")
+      toast.error(error?.message || "Failed to delete order")
     } finally {
       setLoading(false)
     }

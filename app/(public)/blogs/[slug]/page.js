@@ -26,6 +26,7 @@ const loadBlog = unstable_cache(
       include: {
         author: { select: { name: true, image: true } },
         comments: {
+          take: 50,
           select: {
             id: true,
             content: true,

@@ -10,6 +10,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db";
 import { CACHE_TAGS, CACHE_TTL, staggeredTtl } from "@/lib/cache/config";
+import { PRODUCT_CARD_SELECT } from "@/lib/catalog/selects";
 import { organizationSchema, websiteSchema } from "@/lib/seo/structured-data";
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +22,7 @@ const loadHomeData = unstable_cache(
         where: { isActive: true, availabilityStatus: "IN_STOCK" },
         orderBy: { createdAt: 'desc' },
         take: 8,
-        include: { category: true },
+        select: PRODUCT_CARD_SELECT,
       }),
       db.banner.findMany({
         where: { isActive: true },

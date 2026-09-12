@@ -15,7 +15,9 @@ export function DeleteConfirmationDialog({
   onOpenChange, 
   onConfirm, 
   title = "Are you sure?", 
-  description = "This action cannot be undone. This will permanently delete the selected items." 
+  description = "This action cannot be undone. This will permanently delete the selected items.",
+  confirmLabel = "Confirm Delete",
+  confirmDisabled = false
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -30,8 +32,8 @@ export function DeleteConfirmationDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            Confirm Delete
+          <Button variant="destructive" onClick={onConfirm} disabled={confirmDisabled}>
+            {confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

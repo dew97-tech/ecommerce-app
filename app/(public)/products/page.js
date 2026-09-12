@@ -3,8 +3,8 @@ import { CatalogPagination } from "@/components/catalog/pagination";
 import { FilterSidebar } from "@/components/catalog/filter-sidebar";
 import { ListingToolbar } from "@/components/catalog/listing-toolbar";
 import { ProductCard } from "@/components/product/product-card";
-import { db } from "@/lib/db";
 import { getListingFacets } from "@/lib/catalog/facets";
+import { getListingResults } from "@/lib/catalog/listing";
 import {
   buildOrderBy,
   buildProductWhere,
@@ -31,15 +31,13 @@ export default async function ProductsPage({ searchParams }) {
     search: listing.search,
   });
 
-  const [products, totalCount, facets] = await Promise.all([
-    db.product.findMany({
+  const [{ products, totalCount }, facets] = await Promise.all([
+    getListingResults({
       where,
-      include: { category: true },
       orderBy: buildOrderBy(listing.sort),
       skip: listing.skip,
       take: listing.limit,
     }),
-    db.product.count({ where }),
     getListingFacets({ contextWhere, availability: listing.availability }),
   ]);
 

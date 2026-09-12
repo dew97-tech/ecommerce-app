@@ -46,6 +46,16 @@ export async function POST(req) {
       )
     }
 
+    if (order.paymentStatus === "PENDING" && order.transactionId) {
+      return NextResponse.json(
+        {
+          message: "A payment is already in progress for this order",
+          code: "PAYMENT_IN_PROGRESS",
+        },
+        { status: 409 }
+      )
+    }
+
     const tranId = `${order.id}-${Date.now()}`
 
     await db.order.update({

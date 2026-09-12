@@ -1,10 +1,11 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState } from "react"
 import { toast } from "sonner"
 
-export function PayNowButton({ orderId, amount }) {
+export function PayNowButton({ orderId, amount, inFlight = false }) {
   const [loading, setLoading] = useState(false)
 
   const handlePayNow = async () => {
@@ -20,7 +21,7 @@ export function PayNowButton({ orderId, amount }) {
       if (data.url) {
         window.location.href = data.url
       } else {
-        toast.error("Failed to initiate payment")
+        toast.error(data.message || "Failed to initiate payment")
       }
     } catch (error) {
       console.error("Payment error:", error)
@@ -28,6 +29,24 @@ export function PayNowButton({ orderId, amount }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (inFlight) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span tabIndex={0} className="inline-flex">
+            <Button disabled className="bg-green-600 text-white">
+              Payment in progress
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          A payment is already in progress for this order. Complete it, or wait
+          for the gateway to respond before trying again.
+        </TooltipContent>
+      </Tooltip>
+    )
   }
 
   return (

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache"
 import { db } from "@/lib/db"
 import { CACHE_TAGS, CACHE_TTL, staggeredTtl } from "@/lib/cache/config"
+import { PRODUCT_CARD_SELECT } from "@/lib/catalog/selects"
 import { getDiscountPercentage, getSellingPrice } from "@/lib/price"
 import Image from "next/image"
 import Link from "next/link"
@@ -18,9 +19,7 @@ const loadRelatedProducts = unstable_cache(
       orderBy: {
         isTrending: 'desc', 
       },
-      include: {
-        category: true
-      }
+      select: PRODUCT_CARD_SELECT,
     }),
   ["related-products"],
   {

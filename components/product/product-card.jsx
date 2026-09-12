@@ -1,17 +1,21 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
+import { validateCartLine } from "@/lib/actions/cart"
 import { parseImages } from "@/lib/images"
 import { getDiscountPercentage, getSellingPrice } from "@/lib/price"
 import { cn } from "@/lib/utils"
 import { useCartStore } from "@/store/useCartStore"
-import { ShoppingCart } from "lucide-react"
+import { Loader2, ShoppingCart } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import { toast } from "sonner"
 
 export function ProductCard({ product }) {
   const addItem = useCartStore((state) => state.addItem)
+  const items = useCartStore((state) => state.items)
+  const [isPending, setIsPending] = useState(false)
 
   const sellingPrice = getSellingPrice(product)
   const discountPercentage = getDiscountPercentage(product)
@@ -24,19 +28,43 @@ export function ProductCard({ product }) {
     product.availabilityStatus !== "OUT_OF_STOCK" && (product.stock ?? 0) > 0
   const label = product.brand || product.category?.name || ""
 
-  const handleAddToCart = () => {
-    if (!isAvailable) return
+  const handleAddToCart = async () => {
+    if (!isAvailable || isPending) return
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: sellingPrice,
-      image: primaryImage,
-      quantity: 1,
-      stock: product.stock,
-    })
+    setIsPending(true)
 
-    toast.success("Added to cart")
+    try {
+      const existingQuantity =
+        items.find((item) => item.id === product.id)?.quantity ?? 0
+      const requested = existingQuantity + 1
+      const fresh = await validateCartLine(product.id, requested)
+
+      if (!fresh || !fresh.available) {
+        toast.error("This product is out of stock")
+        return
+      }
+
+      addItem({
+        id: product.id,
+        slug: product.slug,
+        name: fresh.name,
+        price: fresh.price,
+        image: fresh.image || primaryImage,
+        quantity: 1,
+        stock: fresh.stock,
+      })
+
+      if (requested > fresh.stock) {
+        toast.error(`Only ${fresh.stock} left in stock`)
+      } else {
+        toast.success("Added to cart")
+      }
+    } catch (error) {
+      console.error("Add to cart error:", error)
+      toast.error("Could not verify stock. Please try again.")
+    } finally {
+      setIsPending(false)
+    }
   }
 
   return (
@@ -128,12 +156,21 @@ export function ProductCard({ product }) {
           size="sm"
           variant={isAvailable ? "default" : "secondary"}
           className="mt-3 h-9 w-full"
-          disabled={!isAvailable}
+          disabled={!isAvailable || isPending}
           onClick={handleAddToCart}
           aria-label={`Add ${product.name} to cart`}
         >
-          <ShoppingCart className="mr-1.5 h-4 w-4" />
-          {isAvailable ? "Add to Cart" : "Out of Stock"}
+          {isPending ? (
+            <>
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              Adding...
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="mr-1.5 h-4 w-4" />
+              {isAvailable ? "Add to Cart" : "Out of Stock"}
+            </>
+          )}
         </Button>
       </div>
     </article>

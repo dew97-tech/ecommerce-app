@@ -88,10 +88,14 @@ model Product {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  @@index([isActive])
   @@index([sourceStatus])
   @@index([lastSyncedAt])
-  @@index([isActive, availabilityStatus, createdAt])
+  @@index([availabilityStatus, isActive, createdAt])
+  @@index([availabilityStatus, isActive, name])
+  @@index([availabilityStatus, isActive, price])
+  @@index([availabilityStatus, isActive, brand])
+  @@index([availabilityStatus, isActive, categoryId])
+  @@index([stock, isActive])
   @@index([categoryId, isActive, availabilityStatus])
   @@index([isTrending, createdAt])
   @@index([brand])
@@ -145,6 +149,11 @@ model Order {
   cardCategory    String?
   riskLevel       Int?
   riskTitle       String?
+  cancellationReason String?
+  cancellationNote   String?  @db.Text
+  cancelledBy        String?
+  cancelledAt        DateTime?
+  checkoutToken      String?  @unique
 
   orderItems      OrderItem[]
   createdAt       DateTime    @default(now())

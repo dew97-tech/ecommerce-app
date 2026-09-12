@@ -17,7 +17,7 @@ const ORDER_STEPS = [
   { key: "DELIVERED", label: "Delivered", icon: PackageCheck },
 ]
 
-export function OrderStatusSteps({ status }) {
+export function OrderStatusSteps({ status, cancellationReason, cancellationNote }) {
   if (status === "CANCELLED" || status === "FAILED") {
     const isCancelled = status === "CANCELLED"
     const Icon = isCancelled ? XCircle : CircleAlert
@@ -32,9 +32,20 @@ export function OrderStatusSteps({ status }) {
         )}
       >
         <Icon className="h-4 w-4 shrink-0" />
-        {isCancelled
-          ? "This order was cancelled."
-          : "This order could not be completed."}
+        <div className="min-w-0">
+          <p>
+            {isCancelled
+              ? "This order was cancelled."
+              : "This order could not be completed."}
+          </p>
+          {isCancelled && (cancellationReason || cancellationNote) && (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {cancellationReason}
+              {cancellationReason && cancellationNote ? " — " : ""}
+              {cancellationNote}
+            </p>
+          )}
+        </div>
       </div>
     )
   }

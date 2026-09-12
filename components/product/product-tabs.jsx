@@ -23,9 +23,13 @@ export function ProductTabs({ product }) {
     ''
   )
 
-  const averageRating = product.reviews?.length > 0
-    ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
-    : 0
+  const reviewCount = product.reviewCount ?? product.reviews?.length ?? 0
+
+  const averageRating = typeof product.averageRating === 'number'
+    ? product.averageRating
+    : product.reviews?.length > 0
+      ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
+      : 0
 
   return (
     <div id="specifications" className="w-full scroll-mt-24">
@@ -47,7 +51,7 @@ export function ProductTabs({ product }) {
                   value="reviews" 
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3 font-semibold text-base"
               >
-                  Reviews ({product.reviews?.length || 0})
+                  Reviews ({reviewCount})
               </TabsTrigger>
           </TabsList>
 
@@ -107,7 +111,7 @@ export function ProductTabs({ product }) {
               <div className="bg-card rounded-lg border shadow-sm p-8">
                   <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
                       <div className="min-w-0">
-                          <h3 className="text-xl font-bold">Reviews ({product.reviews?.length || 0})</h3>
+                          <h3 className="text-xl font-bold">Reviews ({reviewCount})</h3>
                           <p className="mt-1 max-w-xl text-sm text-muted-foreground">Get specific details about this product from customers who own it.</p>
                       </div>
                       <div className="flex shrink-0 items-center gap-2 rounded-lg bg-muted/30 px-4 py-2">

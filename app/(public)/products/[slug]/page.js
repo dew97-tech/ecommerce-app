@@ -14,13 +14,14 @@ import { cache } from "react"
 export const dynamic = 'force-dynamic'
 
 const loadProduct = unstable_cache(
-  async (slug) =>
-    db.product.findFirst({
+  async (slug) => {
+    const product = await db.product.findFirst({
       where: { slug, isActive: true },
       include: {
         category: true,
         variants: true,
         reviews: {
+          take: 50,
           select: {
             id: true,
             rating: true,
@@ -31,7 +32,22 @@ const loadProduct = unstable_cache(
           orderBy: { createdAt: 'desc' }
         }
       },
-    }),
+    })
+
+    if (!product) return null
+
+    const reviewStats = await db.review.aggregate({
+      where: { productId: product.id },
+      _avg: { rating: true },
+      _count: { _all: true },
+    })
+
+    return {
+      ...product,
+      reviewCount: reviewStats._count._all,
+      averageRating: reviewStats._avg.rating ?? 0,
+    }
+  },
   ["product-detail"],
   {
     tags: [CACHE_TAGS.products, CACHE_TAGS.reviews],

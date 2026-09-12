@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { StatusBadge } from "@/components/admin/status-badge"
 import { OrderStatusSteps } from "@/components/orders/order-status-steps"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { db } from "@/lib/db"
 import { getFirstImage } from "@/lib/images"
 import { cn } from "@/lib/utils"
@@ -14,10 +15,12 @@ import {
   Package,
   ShoppingBag,
   Truck,
+  XCircle,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { CancelOrderButton } from "./cancel-order-button"
 import { DeleteOrderButton } from "./delete-order-button"
 import { PayNowButton } from "./pay-now-button"
 
@@ -86,6 +89,8 @@ export default async function OrdersPage({ searchParams }) {
           paymentStatus: true,
           transactionId: true,
           shippingAddress: true,
+          cancellationReason: true,
+          cancellationNote: true,
           createdAt: true,
           orderItems: {
             select: {
@@ -259,14 +264,27 @@ export default async function OrdersPage({ searchParams }) {
           ) : (
             <div className="space-y-6">
               {orders.map((order) => {
+                const inFlightPay =
+                  order.paymentMethod === "SSLCOMMERZ" &&
+                  order.paymentStatus === "PENDING" &&
+                  Boolean(order.transactionId) &&
+                  (order.status === "PENDING" || order.status === "FAILED")
                 const canPay =
                   (order.status === "PENDING" || order.status === "FAILED") &&
                   order.paymentStatus !== "PAID" &&
-                  order.paymentMethod === "SSLCOMMERZ"
+                  order.paymentMethod === "SSLCOMMERZ" &&
+                  !inFlightPay
+                const canCancel =
+                  (order.status === "PENDING" || order.status === "FAILED") &&
+                  order.paymentStatus !== "PAID"
                 const canDelete =
-                  order.status === "PENDING" ||
-                  order.status === "FAILED" ||
-                  order.status === "CANCELLED"
+                  order.status === "CANCELLED" && order.paymentStatus !== "PAID"
+                const cancelLocked =
+                  order.status === "PROCESSING" ||
+                  order.status === "SHIPPED" ||
+                  order.status === "DELIVERED"
+                const showActions =
+                  canPay || inFlightPay || canCancel || canDelete || cancelLocked
                 const itemCount = order.orderItems.reduce(
                   (sum, item) => sum + item.quantity,
                   0
@@ -310,7 +328,11 @@ export default async function OrdersPage({ searchParams }) {
                     </div>
 
                     <div className="space-y-5 px-4 py-5 sm:px-5">
-                      <OrderStatusSteps status={order.status} />
+                      <OrderStatusSteps
+                        status={order.status}
+                        cancellationReason={order.cancellationReason}
+                        cancellationNote={order.cancellationNote}
+                      />
 
                       <ul className="divide-y divide-border">
                         {order.orderItems.map((item) => {
@@ -363,7 +385,7 @@ export default async function OrdersPage({ searchParams }) {
                       </ul>
                     </div>
 
-                    <div className="grid gap-4 border-t border-border bg-muted/20 px-4 py-4 text-sm sm:grid-cols-2 sm:px-5">
+                    <div className="flex flex-col gap-4 border-t border-border bg-muted/20 px-4 py-4 text-sm sm:flex-row sm:items-start sm:justify-between sm:px-5">
                       <div className="flex items-start gap-2.5">
                         <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
@@ -373,7 +395,7 @@ export default async function OrdersPage({ searchParams }) {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2.5">
+                      <div className="flex items-start gap-2.5 sm:text-right">
                         <CreditCard className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                         <div className="min-w-0">
                           <p className="font-medium">Payment</p>
@@ -388,13 +410,37 @@ export default async function OrdersPage({ searchParams }) {
                       </div>
                     </div>
 
-                    {(canPay || canDelete) && (
+                    {showActions && (
                       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-4 py-3 sm:px-5">
-                        {canPay && (
+                        {(canPay || inFlightPay) && (
                           <PayNowButton
                             orderId={order.id}
                             amount={order.totalAmount}
+                            inFlight={!canPay && inFlightPay}
                           />
+                        )}
+                        {canCancel && <CancelOrderButton orderId={order.id} />}
+                        {cancelLocked && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0} className="inline-flex">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1.5"
+                                  disabled
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                  Cancel order
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              Processing has already started, so this order
+                              can&apos;t be cancelled. Our warehouse crew moves
+                              fast.
+                            </TooltipContent>
+                          </Tooltip>
                         )}
                         {canDelete && <DeleteOrderButton orderId={order.id} />}
                       </div>

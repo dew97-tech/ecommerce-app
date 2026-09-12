@@ -71,7 +71,17 @@ export default async function ProductsPage(props) {
   const [products, totalCount] = await Promise.all([
     db.product.findMany({
       where,
-      include: { category: { select: { name: true } } },
+      select: {
+        id: true,
+        name: true,
+        productCode: true,
+        price: true,
+        discountedPrice: true,
+        stock: true,
+        isActive: true,
+        images: true,
+        category: { select: { name: true } },
+      },
       orderBy:
         filter === 'low-stock'
           ? { stock: 'asc' }

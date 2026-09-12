@@ -34,6 +34,27 @@ export async function POST(req) {
     const amountMatches = Math.abs(Number(amount) - order.totalAmount) < 0.01
     const currencyMatches = (currency || 'BDT') === 'BDT'
 
+    if (order.status === 'CANCELLED') {
+      if (amountMatches && currencyMatches) {
+        await db.order.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: 'PAID',
+            valId: val_id,
+            bankTranId: validationResponse.bank_tran_id,
+            cardType: validationResponse.card_type,
+            cardNo: validationResponse.card_no,
+            cardIssuer: validationResponse.card_issuer,
+            cardBrand: validationResponse.card_brand,
+            riskLevel: validationResponse.risk_level ? parseInt(validationResponse.risk_level) : 0,
+            riskTitle: validationResponse.risk_title,
+          },
+        })
+      }
+
+      return NextResponse.json({ received: true })
+    }
+
     if (!amountMatches || !currencyMatches) {
       await db.order.update({
         where: { id: order.id },

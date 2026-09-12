@@ -14,6 +14,7 @@ import {
   getCategorySubtreeIds,
 } from "@/lib/catalog/categories";
 import { getListingFacets } from "@/lib/catalog/facets";
+import { getListingResults } from "@/lib/catalog/listing";
 import {
   buildOrderBy,
   buildProductWhere,
@@ -111,15 +112,13 @@ export default async function CategoryPage({ params, searchParams }) {
     search: listing.search,
   });
 
-  const [products, totalCount, facets, subtreeCounts] = await Promise.all([
-    db.product.findMany({
+  const [{ products, totalCount }, facets, subtreeCounts] = await Promise.all([
+    getListingResults({
       where,
-      include: { category: true },
       orderBy: buildOrderBy(listing.sort),
       skip: listing.skip,
       take: listing.limit,
     }),
-    db.product.count({ where }),
     getListingFacets({
       contextWhere,
       availability: listing.availability,

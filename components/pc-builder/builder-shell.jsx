@@ -123,6 +123,7 @@ export function BuilderShell() {
       for (const { product } of available) {
         addItem({
           id: product.id,
+          slug: product.slug,
           name: product.name,
           price: product.discountedPrice ?? product.price,
           image: product.image,
