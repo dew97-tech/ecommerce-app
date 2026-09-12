@@ -1,10 +1,11 @@
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import { ImageField } from "@/components/admin/image-field"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createCategory } from "@/lib/admin-category-actions"
+import { createCategory } from "@/lib/actions/admin-categories"
 import { ArrowLeft, Plus } from "lucide-react"
 import Link from "next/link"
 
@@ -54,11 +55,12 @@ export default function NewCategoryPage() {
               <Label htmlFor="name" className="font-semibold">Category Name</Label>
               <Input id="name" name="name" placeholder="e.g. Laptops" required className="h-11" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="image" className="font-semibold">Image URL (Optional)</Label>
-              <Input id="image" name="image" placeholder="https://..." className="h-11" />
-              <p className="text-xs text-muted-foreground">Provide a direct link to an image for this category.</p>
-            </div>
+            <ImageField
+              label="Category tile"
+              description="Square image, 600×600 recommended. Used on the home grid, categories page and category header."
+              urlName="image"
+              fileName="imageFile"
+            />
 
             <div className="flex items-center space-x-2">
               <Checkbox id="isFeatured" name="isFeatured" />

@@ -1,18 +1,41 @@
-import { auth } from "@/auth"
+import { requireUser } from "@/lib/auth/guards"
 import { db } from "@/lib/db"
-import { existsSync } from "fs"
-import { mkdir, writeFile } from "fs/promises"
+import { checkRateLimit } from "@/lib/security/rate-limit"
+import { saveImageFile } from "@/lib/services/upload"
 import { NextResponse } from "next/server"
-import path from "path"
+
+const SAFE_UPLOAD_ERROR = /too large|maximum size|invalid image|empty|no file/i
+const GENERIC_UPLOAD_ERROR =
+  "Upload failed. Only JPG, PNG, GIF or WebP images up to 5MB are allowed."
+
+async function getSessionUser() {
+  try {
+    return await requireUser()
+  } catch {
+    return null
+  }
+}
 
 export async function POST(request) {
-  try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  const user = await getSessionUser()
 
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const limit = checkRateLimit(`upload:avatar:${user.id}`, {
+    limit: 10,
+    windowMs: 60 * 60 * 1000,
+  })
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many uploads. Please try again later." },
+      { status: 429 }
+    )
+  }
+
+  try {
     const formData = await request.formData()
     const file = formData.get("file")
 
@@ -20,51 +43,26 @@ export async function POST(request) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Only JPG, PNG, and WebP are allowed." },
-        { status: 400 }
-      )
+    let imageUrl
+    try {
+      imageUrl = await saveImageFile(file, "avatars")
+    } catch (error) {
+      const message = SAFE_UPLOAD_ERROR.test(error.message ?? "")
+        ? error.message
+        : GENERIC_UPLOAD_ERROR
+
+      return NextResponse.json({ error: message }, { status: 400 })
     }
 
-    // Validate file size (5MB)
-    const maxSize = 5 * 1024 * 1024
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: "File size too large. Maximum size is 5MB." },
-        { status: 400 }
-      )
-    }
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), "public", "uploads", "avatars")
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    const fileExtension = file.name.split(".").pop()
-    const fileName = `${session.user.id}-${Date.now()}.${fileExtension}`
-    const filePath = path.join(uploadsDir, fileName)
-
-    // Write file
-    await writeFile(filePath, buffer)
-
-    // Update user in database
-    const imageUrl = `/uploads/avatars/${fileName}`
     await db.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: { image: imageUrl },
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       imageUrl,
-      message: "Profile picture updated successfully" 
+      message: "Profile picture updated successfully"
     })
   } catch (error) {
     console.error("Error uploading avatar:", error)
@@ -76,22 +74,21 @@ export async function POST(request) {
 }
 
 export async function DELETE() {
-  try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  const user = await getSessionUser()
 
-    // Remove avatar from database
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
     await db.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: { image: null },
     })
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: "Profile picture removed successfully" 
+      message: "Profile picture removed successfully"
     })
   } catch (error) {
     console.error("Error removing avatar:", error)

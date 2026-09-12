@@ -1,6 +1,6 @@
 "use client"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/common/user-avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { addComment, deleteComment } from "@/lib/actions/blog"
@@ -18,12 +18,12 @@ export function CommentSection({ blogId, comments }) {
       toast.error("Please login to comment")
       return
     }
-    
+
     setIsSubmitting(true)
     try {
       await addComment(blogId, formData)
       toast.success("Comment added!")
-      // Reset form manually or rely on key change if needed, but simple reset is fine
+
       document.getElementById("comment-form").reset()
     } catch (error) {
       toast.error(error.message)
@@ -48,14 +48,16 @@ export function CommentSection({ blogId, comments }) {
 
       {session ? (
         <form id="comment-form" action={handleSubmit} className="space-y-4">
-          <div className="flex gap-4">
-            <Avatar>
-              <AvatarFallback>{session.user.name?.[0] || "U"}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-2">
-              <Textarea 
-                name="content" 
-                placeholder="Share your thoughts..." 
+          <div className="flex gap-3">
+            <UserAvatar
+              name={session.user.name}
+              image={session.user.image}
+              className="h-9 w-9"
+            />
+            <div className="min-w-0 flex-1 space-y-2">
+              <Textarea
+                name="content"
+                placeholder="Share your thoughts..."
                 required
                 className="min-h-[100px]"
               />
@@ -68,8 +70,10 @@ export function CommentSection({ blogId, comments }) {
           </div>
         </form>
       ) : (
-        <div className="bg-muted/50 p-6 rounded-lg text-center">
-          <p className="text-muted-foreground mb-4">Please log in to join the discussion.</p>
+        <div className="rounded-lg border border-border bg-muted/40 p-6 text-center">
+          <p className="mb-4 text-muted-foreground">
+            Please log in to join the discussion.
+          </p>
           <Button variant="outline" asChild>
             <a href="/login">Login</a>
           </Button>
@@ -78,30 +82,38 @@ export function CommentSection({ blogId, comments }) {
 
       <div className="space-y-6">
         {comments.map((comment) => (
-          <div key={comment.id} className="flex gap-4 group">
-            <Avatar>
-              <AvatarFallback>{comment.user.name?.[0] || "U"}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{comment.user.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(comment.createdAt).toLocaleDateString()}
+          <div key={comment.id} className="group flex gap-3">
+            <UserAvatar
+              name={comment.user.name}
+              image={comment.user.image}
+              className="h-9 w-9"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="truncate text-sm font-semibold text-foreground">
+                    {comment.user.name}
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {new Date(comment.createdAt).toLocaleDateString("en-US")}
                   </span>
                 </div>
-                {(session?.user?.role === "ADMIN" || session?.user?.id === comment.userId) && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-destructive"
+                {(session?.user?.role === "ADMIN" ||
+                  session?.user?.id === comment.userId) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 text-destructive opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                     onClick={() => handleDelete(comment.id)}
+                    aria-label="Delete comment"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              <p className="text-sm leading-relaxed">{comment.content}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {comment.content}
+              </p>
             </div>
           </div>
         ))}

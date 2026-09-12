@@ -1,60 +1,92 @@
-import { AuthNavigation } from "@/components/auth/auth-navigation"
+import { siteConfig } from "@/lib/site-config"
+import { Headphones, ShieldCheck, Truck, Wallet } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
+
+const TRUST_POINTS = [
+  { icon: ShieldCheck, label: "Genuine products with official warranty" },
+  { icon: Wallet, label: siteConfig.emiNote },
+  { icon: Truck, label: siteConfig.freeDeliveryNote },
+  { icon: Headphones, label: `Support hotline ${siteConfig.supportPhone}` },
+]
+
+function BrandMark({ compact = false }) {
+  return (
+    <Link href="/" className="flex items-center gap-2">
+      <span
+        className={
+          compact
+            ? "flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground"
+            : "flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground"
+        }
+      >
+        R
+      </span>
+      <span className={compact ? "font-bold text-foreground" : "text-lg font-bold text-white"}>
+        {siteConfig.name}
+      </span>
+    </Link>
+  )
+}
 
 export default function AuthLayout({ children }) {
   return (
-    <div className="w-full min-h-screen lg:grid lg:grid-cols-2">
-      {/* Left Column - Image & Branding */}
-      <div className="hidden lg:flex flex-col relative bg-zinc-900 text-white dark:border-r">
-        {/* Background Image */}
-        <div className="absolute inset-0 bg-zinc-900">
-             <Image
-                src="/tech_ecommerce_bg_1764356278240.png"
-                alt="TechNexus Background"
-                fill
-                className="object-cover opacity-50"
-                priority
-             />
-        </div>
-        
-        {/* Content Overlay */}
-        <div className="relative z-20 flex flex-col justify-between h-full p-10">
-            {/* Logo */}
-            <div className="flex items-center text-lg font-medium">
-                <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mr-2 h-6 w-6"
-                >
-                <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-                </svg>
-                TechNexus
+    <div className="min-h-screen bg-background lg:grid lg:grid-cols-2">
+
+      <aside className="relative hidden overflow-hidden bg-slate-950 lg:flex lg:flex-col">
+        <Image
+          src="/banners/laptop-mobile.webp"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/40" />
+
+        <div className="relative z-10 flex h-full flex-col justify-between p-10 xl:p-14">
+          <BrandMark />
+
+          <div className="max-w-md space-y-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-blue-300">
+                {siteConfig.tagline}
+              </p>
+              <h2 className="mt-3 text-3xl font-bold leading-tight text-white">
+                Genuine PC parts, laptops and gear — with real after-sales support.
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                Manage your orders, track deliveries and build your next PC from
+                one account.
+              </p>
             </div>
 
-            {/* Slogan/Testimonial */}
-            <div className="relative z-20 mt-auto">
-                <blockquote className="space-y-2">
-                <p className="text-lg">
-                    &ldquo;Experience the future of technology shopping. Premium gear, unbeatable prices, and a community of enthusiasts.&rdquo;
-                </p>
-                <footer className="text-sm">The TechNexus Team</footer>
-                </blockquote>
-            </div>
-        </div>
-      </div>
+            <ul className="space-y-3">
+              {TRUST_POINTS.map((point) => (
+                <li key={point.label} className="flex items-center gap-3 text-sm text-slate-200">
+                  <point.icon className="h-4 w-4 shrink-0 text-primary" />
+                  {point.label}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-      {/* Right Column - Form */}
-      <div className="relative flex items-center justify-center py-12">
-        <AuthNavigation />
-        <div className="mx-auto grid w-[350px] gap-6">
-            {children}
+          <p className="text-xs text-slate-400">
+            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+          </p>
         </div>
-      </div>
+      </aside>
+
+      <main className="flex min-h-screen flex-col">
+        <header className="flex items-center px-5 py-5 lg:hidden">
+          <BrandMark compact />
+        </header>
+
+        <div className="flex flex-1 items-center justify-center px-5 pb-12">
+          <div className="w-full max-w-[400px]">{children}</div>
+        </div>
+      </main>
     </div>
   )
 }

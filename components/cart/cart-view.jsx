@@ -4,23 +4,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useCartStore } from "@/store/useCartStore"
+import { useIsMounted } from "@/lib/use-is-mounted"
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 export function CartView() {
-  const [isMounted, setIsMounted] = useState(false)
+  const isMounted = useIsMounted()
   const items = useCartStore((state) => state.items)
   const removeItem = useCartStore((state) => state.removeItem)
   const updateQuantity = useCartStore((state) => state.updateQuantity)
   const total = useCartStore((state) => state.total)
   const clearCart = useCartStore((state) => state.clearCart)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   if (!isMounted) {
     return (
@@ -35,12 +31,12 @@ export function CartView() {
 
   const handleRemove = (id) => {
     removeItem(id)
-    toast.error("Item removed from cart")
+    toast.success("Item removed from cart")
   }
 
   const handleClear = () => {
     clearCart()
-    toast.error("Cart cleared")
+    toast.success("Cart cleared")
   }
 
   const handleUpdateQuantity = (id, newQuantity) => {
@@ -78,7 +74,7 @@ export function CartView() {
                 
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-lg mb-1 truncate">{item.name}</h3>
-                  <p className="text-primary font-bold text-xl mb-3">৳{item.price.toLocaleString()}</p>
+                  <p className="text-price font-bold text-xl mb-3">৳{item.price.toLocaleString('en-US')}</p>
                   
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 bg-accent/30 rounded-lg p-1">
@@ -96,6 +92,7 @@ export function CartView() {
                         size="icon"
                         className="h-8 w-8 hover:bg-accent"
                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        disabled={item.stock !== undefined && item.quantity >= item.stock}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -114,7 +111,7 @@ export function CartView() {
                 
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground mb-1">Subtotal</p>
-                  <p className="font-bold text-xl">৳{(item.price * item.quantity).toLocaleString()}</p>
+                  <p className="font-bold text-xl">৳{(item.price * item.quantity).toLocaleString('en-US')}</p>
                 </div>
               </div>
             </CardContent>
@@ -139,7 +136,7 @@ export function CartView() {
             <div className="space-y-3">
               <div className="flex justify-between text-base">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">৳{total().toLocaleString()}</span>
+                <span className="font-medium">৳{total().toLocaleString('en-US')}</span>
               </div>
               <div className="flex justify-between text-base">
                 <span className="text-muted-foreground">Shipping</span>
@@ -148,7 +145,7 @@ export function CartView() {
               <Separator />
               <div className="flex justify-between text-xl font-bold">
                 <span>Total</span>
-                <span className="text-primary">৳{total().toLocaleString()}</span>
+                <span className="text-price">৳{total().toLocaleString('en-US')}</span>
               </div>
             </div>
 

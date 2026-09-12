@@ -5,6 +5,11 @@ import { redirect } from "next/navigation"
 
 export const dynamic = 'force-dynamic'
 
+export const metadata = {
+  title: "My Profile",
+  robots: { index: false, follow: false },
+}
+
 export default async function ProfilePage() {
   const session = await auth()
 
@@ -14,6 +19,7 @@ export default async function ProfilePage() {
 
   const user = await db.user.findUnique({
     where: { id: session.user.id },
+    select: { id: true, name: true, email: true, image: true, phone: true, address: true },
   })
 
   if (!user) {

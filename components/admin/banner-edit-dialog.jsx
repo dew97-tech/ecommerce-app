@@ -1,100 +1,127 @@
 'use client'
 
+import { ImageField } from '@/components/admin/image-field'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { updateBanner } from '@/lib/admin-banner-actions'
+import { updateBanner } from '@/lib/actions/admin-banners'
 import { Edit } from 'lucide-react'
 import { useActionState, useState } from 'react'
 
 export function BannerEditDialog({ banner, routes = [] }) {
   const [state, dispatch, isPending] = useActionState(updateBanner, { message: null })
-  const [mode, setMode] = useState('url') // 'url' or 'file'
   const [open, setOpen] = useState(false)
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-            <Edit className="h-4 w-4" /> Edit
+          <Edit className="h-4 w-4" />
+          Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Edit Banner</DialogTitle>
-        </DialogHeader>
-        
-        <Tabs defaultValue="url" onValueChange={setMode} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="url">Image URL</TabsTrigger>
-                <TabsTrigger value="file">Upload Image</TabsTrigger>
-            </TabsList>
-            
-            <form action={dispatch} className="mt-4 space-y-4">
-                <input type="hidden" name="id" value={banner.id} />
-                <input type="hidden" name="mode" value={mode} />
-                
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-title">Title</Label>
-                            <Input id="edit-title" name="title" defaultValue={banner.title} placeholder="Banner Title" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="edit-buttonText">Button Text</Label>
-                            <Input id="edit-buttonText" name="buttonText" defaultValue={banner.buttonText} placeholder="Shop Now" />
-                        </div>
-                    </div>
 
-                    <div className="space-y-2">
-                        <Label>Image</Label>
-                        <TabsContent value="url" className="mt-0">
-                            <Input 
-                                name="imageUrl" 
-                                defaultValue={banner.image.startsWith('/uploads') ? '' : banner.image} 
-                                placeholder="https://example.com/image.jpg" 
-                            />
-                            {banner.image && <p className="text-xs text-muted-foreground mt-1">Current: {banner.image}</p>}
-                        </TabsContent>
-                        <TabsContent value="file" className="mt-0">
-                            <Input name="imageFile" type="file" accept="image/*" />
-                            <p className="text-xs text-muted-foreground mt-1">Leave empty to keep current image</p>
-                        </TabsContent>
-                    </div>
+      <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-2xl">
+        <form action={dispatch} className="flex max-h-[90vh] min-h-0 flex-col">
+          <div className="border-b border-border px-6 py-4">
+            <DialogHeader>
+              <DialogTitle>Edit banner</DialogTitle>
+              <DialogDescription>
+                Update the artwork, copy and destination link.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="edit-link">Link</Label>
-                        <Select name="link" defaultValue={banner.link}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a route" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {routes.map((route, index) => (
-                                    <SelectItem key={index} value={route.path}>
-                                        {route.name} ({route.path})
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-5">
+            <input type="hidden" name="id" value={banner.id} />
 
-                <div className="flex items-center gap-4 justify-end">
-                    <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button type="submit" disabled={isPending}>
-                        {isPending ? 'Updating...' : 'Update Banner'}
-                    </Button>
-                </div>
-                {state.message && (
-                    <p className={`text-sm text-center ${state.message.includes('success') ? 'text-green-600' : 'text-red-500'}`}>
-                        {state.message}
-                    </p>
-                )}
-            </form>
-        </Tabs>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor={`banner-title-${banner.id}`}>Title</Label>
+                <Input
+                  id={`banner-title-${banner.id}`}
+                  name="title"
+                  defaultValue={banner.title ?? ''}
+                  className="min-w-0"
+                />
+              </div>
+
+              <div className="min-w-0 space-y-1.5">
+                <Label htmlFor={`banner-button-${banner.id}`}>Button text</Label>
+                <Input
+                  id={`banner-button-${banner.id}`}
+                  name="buttonText"
+                  defaultValue={banner.buttonText ?? ''}
+                  className="min-w-0"
+                />
+              </div>
+            </div>
+
+            <ImageField
+              label="Desktop image"
+              urlName="imageUrl"
+              fileName="imageFile"
+              currentUrl={banner.image}
+              description="Leave the URL as-is or upload a replacement."
+            />
+
+            <ImageField
+              label="Mobile image (optional)"
+              urlName="imageMobileUrl"
+              fileName="imageMobileFile"
+              currentUrl={banner.imageMobile}
+              description="Used on phones. Leave empty to keep the current mobile image."
+            />
+
+            <div className="min-w-0 space-y-1.5">
+              <Label htmlFor={`banner-link-${banner.id}`}>Link</Label>
+              <Select name="link" defaultValue={banner.link ?? undefined}>
+                <SelectTrigger id={`banner-link-${banner.id}`} className="w-full">
+                  <SelectValue placeholder="Select a route" />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {routes.map((route) => (
+                    <SelectItem key={route.path} value={route.path}>
+                      {route.name} ({route.path})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 border-t border-border bg-muted/30 px-6 py-4">
+            <p
+              className={
+                state.message
+                  ? state.message.includes('success')
+                    ? 'text-sm text-success'
+                    : 'text-sm text-destructive'
+                  : 'text-xs text-muted-foreground'
+              }
+            >
+              {state.message || 'Changes apply to the homepage hero immediately.'}
+            </p>
+
+            <div className="flex shrink-0 gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? 'Saving...' : 'Save changes'}
+              </Button>
+            </div>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

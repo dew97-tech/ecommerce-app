@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { placeOrder } from '@/lib/checkout-actions'
+import { placeOrder } from '@/lib/actions/checkout'
 import { useCartStore } from '@/store/useCartStore'
 import { useActionState, useEffect } from 'react'
 
@@ -14,13 +14,13 @@ export function CheckoutForm() {
   const clearCart = useCartStore((state) => state.clearCart)
   const [state, dispatch, isPending] = useActionState(placeOrder, { message: null, errors: {} })
 
-  // Need to pass items and total to server action via hidden inputs
-  const itemsJson = JSON.stringify(items)
+
+  const itemsJson = JSON.stringify(items.map(({ id, quantity }) => ({ id, quantity })))
   const totalAmount = total()
 
   useEffect(() => {
     if (state.success && state.paymentMethod === 'SSLCOMMERZ' && state.orderId) {
-      // Initiate SSLCommerz payment
+
       fetch('/api/sslcommerz/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,7 +45,6 @@ export function CheckoutForm() {
   return (
     <form action={dispatch}>
       <input type="hidden" name="items" value={itemsJson} />
-      <input type="hidden" name="totalAmount" value={totalAmount} />
       
       <div className="grid md:grid-cols-2 gap-8">
         <Card>

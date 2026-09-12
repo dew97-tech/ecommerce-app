@@ -1,65 +1,146 @@
+import { AdminPageHeader } from "@/components/admin/admin-page-header"
+import { BannerActiveToggle } from "@/components/admin/banner-active-toggle"
+import { BannerDeleteButton } from "@/components/admin/banner-delete-button"
 import { BannerEditDialog } from "@/components/admin/banner-edit-dialog"
 import { BannerForm } from "@/components/admin/banner-form"
-import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/admin/empty-state"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { deleteBanner } from "@/lib/admin-banner-actions"
 import { db } from "@/lib/db"
+import { ExternalLink, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 
 export default async function BannersPage() {
   const [banners, categories] = await Promise.all([
     db.banner.findMany({ orderBy: { createdAt: 'desc' } }),
-    db.category.findMany({ orderBy: { name: 'asc' } })
+    db.category.findMany({ orderBy: { name: 'asc' } }),
   ])
 
   const routes = [
     { name: 'Home', path: '/' },
+    { name: 'PC Builder', path: '/pc-builder' },
     { name: 'All Products', path: '/products' },
-    ...categories.map(c => ({ name: `Category: ${c.name}`, path: `/products?category=${c.slug}` }))
+    ...categories.map((category) => ({
+      name: `Category: ${category.name}`,
+      path: `/categories/${category.id}`,
+    })),
   ]
 
   return (
-    <div className="p-8 pt-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Banners</h2>
-          <p className="text-muted-foreground mt-1">Manage your homepage banners</p>
-        </div>
-      </div>
-      
+    <div className="space-y-6 p-4 md:p-6">
+      <AdminPageHeader
+        title="Banners"
+        description="Manage the homepage hero. Desktop and mobile artwork are served separately."
+        actions={
+          <Link
+            href="/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            View homepage
+            <ExternalLink className="h-3.5 w-3.5" />
+          </Link>
+        }
+      />
+
       <Card>
         <CardHeader>
-          <CardTitle>Add New Banner</CardTitle>
+          <CardTitle className="text-base">Add a banner</CardTitle>
         </CardHeader>
         <CardContent>
           <BannerForm routes={routes} />
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {banners.map((banner) => (
-          <Card key={banner.id} className="overflow-hidden">
-            <div className="relative aspect-video">
-              <Image src={banner.image} alt={banner.title || "Banner"} fill className="object-cover" />
+      {banners.length === 0 ? (
+        <EmptyState
+          icon={ImageIcon}
+          title="No banners yet"
+          description="Add your first hero banner above — it appears on the homepage immediately."
+        />
+      ) : (
+        <div className="grid gap-5 lg:grid-cols-2">
+          {banners.map((banner) => (
+            <div
+              key={banner.id}
+              className="overflow-hidden rounded-xl border border-border bg-card"
+            >
+              <div className="grid grid-cols-[2fr_1fr] gap-px bg-border">
+                <div className="relative aspect-[3/1] bg-white">
+                  <Image
+                    src={banner.image}
+                    alt={banner.title || "Desktop banner"}
+                    fill
+                    sizes="(max-width: 1024px) 66vw, 480px"
+                    className="object-cover"
+                  />
+                  <Badge className="absolute left-2 top-2 border-0 bg-slate-900/80 text-[10px] text-white">
+                    Desktop
+                  </Badge>
+                </div>
+
+                <div className="relative bg-white">
+                  {banner.imageMobile ? (
+                    <Image
+                      src={banner.imageMobile}
+                      alt={banner.title || "Mobile banner"}
+                      fill
+                      sizes="240px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-2 text-center text-xs text-muted-foreground">
+                      No mobile image
+                    </div>
+                  )}
+                  <Badge className="absolute left-2 top-2 border-0 bg-slate-900/80 text-[10px] text-white">
+                    Mobile
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground">
+                      {banner.title || "Untitled banner"}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {banner.link || "No link set"}
+                    </p>
+                    {banner.buttonText && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Button:{" "}
+                        <span className="font-medium text-foreground">
+                          {banner.buttonText}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+
+                  <BannerActiveToggle
+                    bannerId={banner.id}
+                    isActive={banner.isActive}
+                    label={banner.title}
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-2 border-t border-border pt-3">
+                  <BannerEditDialog banner={banner} routes={routes} />
+                  <BannerDeleteButton
+                    bannerId={banner.id}
+                    bannerTitle={banner.title}
+                  />
+                </div>
+              </div>
             </div>
-            <CardContent className="p-4 flex justify-between items-center">
-              <div>
-                <p className="font-bold">{banner.title}</p>
-                <p className="text-sm text-muted-foreground">{banner.link}</p>
-                {banner.buttonText && <p className="text-xs text-primary mt-1">Button: {banner.buttonText}</p>}
-              </div>
-              <div className="flex gap-2">
-                <BannerEditDialog banner={banner} routes={routes} />
-                <form action={deleteBanner.bind(null, banner.id)}>
-                    <Button variant="destructive" size="sm">Delete</Button>
-                </form>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

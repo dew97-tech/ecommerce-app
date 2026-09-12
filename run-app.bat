@@ -4,7 +4,7 @@ echo       E-Commerce App Setup & Run
 echo ==========================================
 echo.
 
-echo [1/3] Installing dependencies...
+echo [1/4] Installing dependencies...
 call npm install
 if %ERRORLEVEL% NEQ 0 (
     echo Error installing dependencies.
@@ -13,7 +13,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [2/3] Setting up Database (Migrations)...
+echo [2/4] Setting up Database (Migrations)...
 echo Attempting to connect to MySQL at localhost:3306...
 call npx prisma db push --accept-data-loss
 if %ERRORLEVEL% NEQ 0 (
@@ -29,7 +29,36 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo [3/3] Starting Development Server...
+echo [3/4] Seeding Database and Migrating Specifications...
+
+echo Creating Admin User...
+node --env-file=.env scripts/seed/promote-admin.js
+
+if exist .seeded (
+    echo Data already seeded. Skipping...
+) else (
+    echo Seeding StarTech Data (This may take a while)...
+    node scripts/seed/seed-startech.js
+    if %ERRORLEVEL% EQU 0 (
+        echo. > .seeded
+        echo Seeding completed.
+    )
+)
+
+if exist .specs-migrated (
+    echo Specs already migrated. Skipping...
+) else (
+    echo Migrating Specifications to Attributes...
+    node scripts/seed/migrate-specs.js
+    if %ERRORLEVEL% EQU 0 (
+        echo. > .specs-migrated
+        echo Migration completed.
+    )
+)
+
+echo.
+echo [4/4] Starting Development Server...
 echo The app will be available at http://localhost:3000
 echo.
 call npm run dev
+

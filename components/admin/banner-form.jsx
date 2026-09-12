@@ -1,78 +1,77 @@
 'use client'
 
+import { ImageField } from '@/components/admin/image-field'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { createBanner } from '@/lib/admin-banner-actions'
-import { useActionState, useState } from 'react'
+import { createBanner } from '@/lib/actions/admin-banners'
+import { useActionState } from 'react'
 
 export function BannerForm({ routes = [] }) {
   const [state, dispatch, isPending] = useActionState(createBanner, { message: null })
-  const [mode, setMode] = useState('url') // 'url' or 'file'
 
   return (
-    <div className="space-y-4">
-      <Tabs defaultValue="url" onValueChange={setMode} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-          <TabsTrigger value="url">Image URL</TabsTrigger>
-          <TabsTrigger value="file">Upload Image</TabsTrigger>
-        </TabsList>
-        
-        <form action={dispatch} className="mt-4 space-y-4">
-            <input type="hidden" name="mode" value={mode} />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input id="title" name="title" placeholder="Banner Title" />
-                </div>
+    <form action={dispatch} className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="min-w-0 space-y-1.5">
+          <Label htmlFor="banner-title">Title</Label>
+          <Input id="banner-title" name="title" placeholder="Build Your Dream PC" className="min-w-0" />
+        </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="buttonText">Button Text</Label>
-                    <Input id="buttonText" name="buttonText" placeholder="Shop Now" />
-                </div>
+        <div className="min-w-0 space-y-1.5">
+          <Label htmlFor="banner-buttonText">Button text</Label>
+          <Input id="banner-buttonText" name="buttonText" placeholder="Shop Now" className="min-w-0" />
+        </div>
+      </div>
 
-                <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="image-input">Image</Label>
-                    <TabsContent value="url" className="mt-0">
-                        <Input id="image-url" name="imageUrl" placeholder="https://example.com/image.jpg" required={mode === 'url'} />
-                    </TabsContent>
-                    <TabsContent value="file" className="mt-0">
-                        <Input id="image-file" name="imageFile" type="file" accept="image/*" required={mode === 'file'} />
-                    </TabsContent>
-                </div>
+      <ImageField
+        label="Desktop image"
+        urlName="imageUrl"
+        fileName="imageFile"
+        required
+        description="Shown on tablets and desktops. Recommended 1920×640."
+      />
 
-                <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="link">Link</Label>
-                    <Select name="link">
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a route" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {routes.map((route, index) => (
-                                <SelectItem key={index} value={route.path}>
-                                    {route.name} ({route.path})
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
+      <ImageField
+        label="Mobile image (optional)"
+        urlName="imageMobileUrl"
+        fileName="imageMobileFile"
+        description="Portrait image for phones. Falls back to the desktop image when empty."
+      />
 
-            <div className="flex items-center gap-4">
-                <Button type="submit" disabled={isPending}>
-                    {isPending ? 'Adding...' : 'Add Banner'}
-                </Button>
-                {state.message && (
-                    <p className={`text-sm ${state.message.includes('created') ? 'text-green-600' : 'text-red-500'}`}>
-                        {state.message}
-                    </p>
-                )}
-            </div>
-        </form>
-      </Tabs>
-    </div>
+      <div className="min-w-0 space-y-1.5">
+        <Label htmlFor="banner-link">Link</Label>
+        <Select name="link">
+          <SelectTrigger id="banner-link" className="w-full">
+            <SelectValue placeholder="Select a route" />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            {routes.map((route) => (
+              <SelectItem key={route.path} value={route.path}>
+                {route.name} ({route.path})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="submit" disabled={isPending}>
+          {isPending ? 'Adding...' : 'Add banner'}
+        </Button>
+        {state.message && (
+          <p
+            className={
+              state.message.includes('success')
+                ? 'text-sm text-success'
+                : 'text-sm text-destructive'
+            }
+          >
+            {state.message}
+          </p>
+        )}
+      </div>
+    </form>
   )
 }

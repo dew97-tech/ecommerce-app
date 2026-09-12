@@ -1,114 +1,135 @@
-'use client'
+import { ContactForm } from "@/components/contact/contact-form"
+import { siteConfig } from "@/lib/site-config"
+import { ChevronRight, Clock, Mail, MapPin, Monitor, Package, Phone } from "lucide-react"
+import Link from "next/link"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Clock, Mail, MapPin, Phone } from "lucide-react"
-import { useState } from "react"
-import { toast } from "sonner"
+export const metadata = {
+  title: "Contact Us",
+  description: `Contact ${siteConfig.name} — showroom address, support phone, email and working hours.`,
+  alternates: { canonical: "/contact" },
+}
+
+const QUICK_LINKS = [
+  { href: "/orders", label: "Track your order", icon: Package },
+  { href: "/pc-builder", label: "Build a custom PC", icon: Monitor },
+  { href: "/faq", label: "Read the FAQs", icon: ChevronRight },
+]
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    toast.success("Message sent successfully! We'll get back to you soon.")
-    setFormData({ name: '', email: '', message: '' })
-  }
+  const channels = [
+    {
+      icon: MapPin,
+      label: "Visit us",
+      value: siteConfig.address,
+    },
+    {
+      icon: Phone,
+      label: "Call us",
+      value: siteConfig.supportPhone,
+      href: `tel:${siteConfig.supportPhone.replace(/\s/g, "")}`,
+    },
+    {
+      icon: Mail,
+      label: "Email us",
+      value: siteConfig.supportEmail,
+      href: `mailto:${siteConfig.supportEmail}`,
+    },
+    {
+      icon: Clock,
+      label: "Working hours",
+      value: siteConfig.hours,
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-accent/5">
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Contact Us
-          </h1>
-          <p className="text-muted-foreground mb-8">Get in touch with our team</p>
+    <div className="container mx-auto px-4 py-8">
+      <nav
+        className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground"
+        aria-label="Breadcrumb"
+      >
+        <Link href="/" className="transition-colors hover:text-primary">
+          Home
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <span className="font-medium text-foreground">Contact Us</span>
+      </nav>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            <Card className="border-0 shadow-lg backdrop-blur-sm bg-card/80">
-              <CardHeader>
-                <CardTitle>Send us a Message</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      required
-                      className="backdrop-blur-sm bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      required
-                      className="backdrop-blur-sm bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      rows={5}
-                      value={formData.message}
-                      onChange={(e) => setFormData({...formData, message: e.target.value})}
-                      required
-                      className="backdrop-blur-sm bg-background/50"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full">Send Message</Button>
-                </form>
-              </CardContent>
-            </Card>
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Contact Us
+        </h1>
+        <p className="mt-2 max-w-2xl text-muted-foreground">
+          Questions about a product, an order or a custom build? Send us a
+          message or reach the team directly — we usually reply within one
+          business day.
+        </p>
+      </header>
 
-            <div className="space-y-6">
-              <Card className="border-0 shadow-lg backdrop-blur-sm bg-card/80">
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h3 className="font-semibold mb-1">Visit Us</h3>
-                        <p className="text-sm text-muted-foreground">Dhaka, Bangladesh</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h3 className="font-semibold mb-1">Call Us</h3>
-                        <p className="text-sm text-muted-foreground">+880 1234-567890</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h3 className="font-semibold mb-1">Working Hours</h3>
-                        <p className="text-sm text-muted-foreground">Mon - Sat: 9:00 AM - 8:00 PM</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Mail className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h3 className="font-semibold mb-1">Email Us</h3>
-                        <p className="text-sm text-muted-foreground">support@bdshop.com</p>
-                      </div>
-                    </div>
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="text-lg font-semibold text-foreground">
+            Send us a message
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Fields marked with an asterisk are required.
+          </p>
+          <ContactForm />
+        </section>
+
+        <aside className="space-y-6">
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="text-lg font-semibold text-foreground">Reach us</h2>
+
+            <div className="mt-4 space-y-5">
+              {channels.map((channel) => (
+                <div key={channel.label} className="flex items-start gap-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <channel.icon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {channel.label}
+                    </p>
+                    {channel.href ? (
+                      <a
+                        href={channel.href}
+                        className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                      >
+                        {channel.value}
+                      </a>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {channel.value}
+                      </p>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+
+          <div className="rounded-xl border border-border bg-card p-6">
+            <h2 className="text-lg font-semibold text-foreground">
+              Quick links
+            </h2>
+
+            <div className="mt-3 space-y-1">
+              {QUICK_LINKS.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <link.icon className="h-4 w-4 text-muted-foreground" />
+                    {link.label}
+                  </span>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   )

@@ -3,31 +3,39 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { deleteCategories, deleteCategory } from "@/lib/admin-category-actions"
-import { useCategorySelectionStore } from "@/lib/stores/category-selection-store"
-import { Edit, Trash2 } from "lucide-react"
+import { CategoryTile } from "@/components/catalog/category-tile"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { deleteCategories, deleteCategory } from "@/lib/actions/admin-categories"
+import { useCategorySelectionStore } from "@/store/category-selection-store"
+import { Edit, FolderTree, Trash2, X } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
 
 export function CategoriesTable({ categories }) {
-  const { selectedIds, toggleId, selectIds, deselectIds, clearSelection } = useCategorySelectionStore()
+  const { selectedIds, toggleId, selectIds, deselectIds, clearSelection } =
+    useCategorySelectionStore()
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [itemToDelete, setItemToDelete] = useState(null) // For single item delete
+  const [itemToDelete, setItemToDelete] = useState(null)
 
-  // Check if all items on CURRENT page are selected
-  const allOnPageSelected = categories.length > 0 && categories.every(c => selectedIds.includes(c.id))
+  const allOnPageSelected =
+    categories.length > 0 &&
+    categories.every((category) => selectedIds.includes(category.id))
 
   const toggleSelectAll = () => {
     if (allOnPageSelected) {
-      // Deselect all on current page
-      deselectIds(categories.map(c => c.id))
+      deselectIds(categories.map((category) => category.id))
     } else {
-      // Select all on current page
-      selectIds(categories.map(c => c.id))
+      selectIds(categories.map((category) => category.id))
     }
   }
 
@@ -47,19 +55,16 @@ export function CategoriesTable({ categories }) {
 
     try {
       if (itemToDelete) {
-        // Single delete
         const result = await deleteCategory(itemToDelete)
         if (result.message.includes("success")) {
           toast.success(result.message)
-          // Also remove from selection if it was selected
           if (selectedIds.includes(itemToDelete)) {
-             toggleId(itemToDelete)
+            toggleId(itemToDelete)
           }
         } else {
           toast.error(result.message)
         }
       } else {
-        // Bulk delete
         const result = await deleteCategories(selectedIds)
         if (result.message.includes("success")) {
           toast.success(result.message)
@@ -77,92 +82,156 @@ export function CategoriesTable({ categories }) {
   }
 
   return (
-    <div className="space-y-4">
-      <DeleteConfirmationDialog 
-        open={showDeleteDialog} 
+    <div>
+      <DeleteConfirmationDialog
+        open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleConfirmDelete}
-        title={itemToDelete ? "Delete Category?" : `Delete ${selectedIds.length} Categories?`}
-        description={itemToDelete 
-            ? "Are you sure you want to delete this category? This action cannot be undone." 
+        title={
+          itemToDelete
+            ? "Delete Category?"
+            : `Delete ${selectedIds.length} Categories?`
+        }
+        description={
+          itemToDelete
+            ? "Are you sure you want to delete this category? This action cannot be undone."
             : `Are you sure you want to delete ${selectedIds.length} categories? This action cannot be undone.`
         }
       />
 
       {selectedIds.length > 0 && (
-        <div className="bg-accent/30 p-2 rounded-lg flex items-center justify-between">
-          <span className="text-sm font-medium px-2">{selectedIds.length} selected</span>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={handleBulkDeleteClick}
-            disabled={isDeleting}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Selected
-          </Button>
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-border bg-popover px-4 py-2 shadow-lg">
+            <span className="text-sm font-medium text-foreground">
+              {selectedIds.length} selected
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+            >
+              <X className="mr-1.5 h-3.5 w-3.5" />
+              Clear
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={handleBulkDeleteClick}
+              disabled={isDeleting}
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              Delete
+            </Button>
+          </div>
         </div>
       )}
 
-      <div className="rounded-md bg-card shadow-sm">
+      <div className="rounded-lg border border-border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead className="w-[50px]">
-                <Checkbox 
+            <TableRow className="bg-muted/40 hover:bg-muted/40">
+              <TableHead className="w-[48px]">
+                <Checkbox
                   checked={allOnPageSelected}
                   onCheckedChange={toggleSelectAll}
+                  aria-label="Select all categories on this page"
                 />
               </TableHead>
-              <TableHead className="font-semibold">Name</TableHead>
-              <TableHead className="font-semibold">Slug</TableHead>
-              <TableHead className="font-semibold">Products</TableHead>
-              <TableHead className="font-semibold text-right">Actions</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Parent</TableHead>
+              <TableHead>Slug</TableHead>
+              <TableHead>Products</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                <TableCell
+                  colSpan={6}
+                  className="py-12 text-center text-muted-foreground"
+                >
                   No categories found.
                 </TableCell>
               </TableRow>
             ) : (
               categories.map((category) => (
-                <TableRow key={category.id} className="hover:bg-muted/50 transition-colors">
+                <TableRow key={category.id} className="hover:bg-muted/40">
                   <TableCell>
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedIds.includes(category.id)}
                       onCheckedChange={() => toggleId(category.id)}
+                      aria-label={`Select ${category.name}`}
                     />
                   </TableCell>
+
                   <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {category.name}
+                    <div
+                      className={
+                        category.parentId
+                          ? "flex items-center gap-2 pl-5"
+                          : "flex items-center gap-2"
+                      }
+                    >
+                      {category.parentId && (
+                        <FolderTree className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      )}
+                      <CategoryTile
+                        name={category.name}
+                        image={category.image}
+                        className="h-8 w-8"
+                        iconClassName="h-4 w-4"
+                        sizes="32px"
+                      />
+                      <span className="truncate">{category.name}</span>
                       {category.isFeatured && (
-                        <Badge variant="secondary" className="text-[10px] h-5">Featured</Badge>
+                        <Badge variant="secondary" className="h-5 text-[10px]">
+                          Featured
+                        </Badge>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{category.slug}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{category._count.products} products</Badge>
+
+                  <TableCell className="text-muted-foreground">
+                    {category.parent?.name || "—"}
                   </TableCell>
+
+                  <TableCell className="max-w-[220px] truncate text-muted-foreground">
+                    {category.slug}
+                  </TableCell>
+
+                  <TableCell>
+                    <Badge variant="outline">
+                      {category._count.products} products
+                    </Badge>
+                  </TableCell>
+
                   <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Link href={`/admin/categories/${category.id}`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-primary">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                      <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 hover:text-destructive"
-                          onClick={() => handleDeleteClick(category.id)}
+                    <div className="flex justify-end gap-1.5">
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:text-primary"
                       >
-                          <Trash2 className="h-4 w-4" />
+                        <Link
+                          href={`/admin/categories/${category.id}`}
+                          aria-label={`Edit ${category.name}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:text-destructive"
+                        onClick={() => handleDeleteClick(category.id)}
+                        aria-label={`Delete ${category.name}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </TableCell>

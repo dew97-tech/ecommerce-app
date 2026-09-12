@@ -5,7 +5,7 @@ echo "       E-Commerce App Setup & Run"
 echo "=========================================="
 echo ""
 
-echo "[1/3] Installing dependencies..."
+echo "[1/4] Installing dependencies..."
 npm install
 if [ $? -ne 0 ]; then
     echo "Error installing dependencies."
@@ -15,7 +15,6 @@ fi
 echo ""
 echo "[2/4] Setting up Database (Migrations & Seeding)..."
 echo "Attempting to connect to MySQL at localhost:3306..."
-# Added --accept-data-loss to handle schema changes automatically
 npx prisma db push --accept-data-loss
 if [ $? -ne 0 ]; then
     echo ""
@@ -26,13 +25,13 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Creating Admin User..."
-node promote-admin.js
+node --env-file=.env scripts/seed/promote-admin.js
 
 if [ -f ".seeded" ]; then
     echo "Data already seeded. Skipping..."
 else
     echo "Seeding StarTech Data (This may take a while)..."
-    node seed-startech.js
+    node scripts/seed/seed-startech.js
     if [ $? -eq 0 ]; then
         touch .seeded
         echo "Seeding completed."
@@ -43,7 +42,7 @@ if [ -f ".specs-migrated" ]; then
     echo "Specs already migrated. Skipping..."
 else
     echo "Migrating Specifications to Attributes..."
-    node scripts/migrate-specs.js
+    node scripts/seed/migrate-specs.js
     if [ $? -eq 0 ]; then
         touch .specs-migrated
         echo "Migration completed."

@@ -1,5 +1,6 @@
 "use client"
 
+import { UserAvatar } from "@/components/common/user-avatar"
 import { StarRating } from "@/components/reviews/star-rating"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -42,8 +43,8 @@ export function AddReviewForm({ productId }) {
 
   if (!session) {
     return (
-      <div className="bg-muted/50 p-6 rounded-lg text-center border">
-        <p className="text-muted-foreground mb-4">Please log in to write a review.</p>
+      <div className="rounded-lg border border-border bg-muted/40 p-6 text-center">
+        <p className="mb-4 text-muted-foreground">Please log in to write a review.</p>
         <Button variant="outline" asChild>
           <a href="/login">Login</a>
         </Button>
@@ -52,20 +53,33 @@ export function AddReviewForm({ productId }) {
   }
 
   return (
-    <div className="bg-card p-6 rounded-lg border shadow-sm">
-      <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
+    <div className="rounded-lg border border-border bg-card p-6">
+      <div className="mb-4 flex items-center gap-3">
+        <UserAvatar
+          name={session.user.name}
+          image={session.user.image}
+          className="h-9 w-9"
+        />
+        <div className="min-w-0">
+          <h3 className="text-base font-semibold text-foreground">Write a Review</h3>
+          <p className="truncate text-xs text-muted-foreground">
+            Reviewing as {session.user.name}
+          </p>
+        </div>
+      </div>
+
       <form id="review-form" action={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label>Rating</Label>
           <StarRating rating={rating} onRatingChange={setRating} size="md" />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="comment">Your Review</Label>
-          <Textarea 
+          <Textarea
             id="comment"
-            name="comment" 
-            placeholder="What did you like or dislike?" 
+            name="comment"
+            placeholder="What did you like or dislike?"
             required
             className="min-h-[100px]"
           />

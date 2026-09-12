@@ -2,6 +2,19 @@ export const authConfig = {
   pages: {
     signIn: '/login',
   },
+  logger: {
+    error(error) {
+
+
+
+
+      if (error?.type === 'JWTSessionError') {
+        console.warn('[auth] Ignored a session cookie signed with an old secret.');
+        return;
+      }
+      console.error(error);
+    },
+  },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
@@ -10,18 +23,18 @@ export const authConfig = {
       
       if (isOnAdmin) {
         if (isLoggedIn && auth.user.role === 'ADMIN') return true;
-        return false; // Redirect to login
+        return false; 
       }
       
       if (isOnCheckout) {
         if (isLoggedIn) return true;
-        return false; // Redirect to login
+        return false; 
       }
 
       const isOnProfile = nextUrl.pathname.startsWith('/profile');
       if (isOnProfile) {
         if (isLoggedIn) return true;
-        return false; // Redirect to login
+        return false; 
       }
       
       return true;
@@ -38,13 +51,18 @@ export const authConfig = {
       }
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.role = user.role;
         token.image = user.image;
       }
+      if (trigger === 'update' && session?.user) {
+
+        if (session.user.name) token.name = session.user.name;
+        if (session.user.image) token.image = session.user.image;
+      }
       return token;
     }
   },
-  providers: [], // Configured in auth.js
+  providers: [], 
 }

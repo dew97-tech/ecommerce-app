@@ -1,70 +1,70 @@
 import { db } from "@/lib/db"
-import { sslcommerz } from "@/lib/sslcommerz"
+import { sslcommerz } from "@/lib/services/sslcommerz"
 import { NextResponse } from "next/server"
 
 export async function POST(req) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+
   try {
     const formData = await req.formData()
     const data = Object.fromEntries(formData)
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-
     const { val_id } = data
 
     if (!val_id) {
-       return NextResponse.redirect(`${baseUrl}/checkout?error=invalid_validation_id`, 303)
+      return NextResponse.redirect(`${baseUrl}/checkout?error=invalid_validation_id`, 303)
     }
 
     const validationResponse = await sslcommerz.validate({ val_id })
 
-    if (validationResponse?.status === 'VALID' || validationResponse?.status === 'VALIDATED') {
-      const { 
-        tran_id, 
-        amount, 
-        card_type, 
-        card_no, 
-        card_issuer, 
-        card_brand, 
-        card_issuer_country, 
-        risk_level, 
-        risk_title,
-        bank_tran_id
-      } = validationResponse
-
-      await db.order.update({
-        where: { id: tran_id },
-        data: {
-          status: 'PROCESSING',
-          paymentStatus: 'PAID',
-          valId: val_id,
-          transactionId: tran_id,
-          bankTranId: bank_tran_id,
-          cardType: card_type,
-          cardNo: card_no,
-          cardIssuer: card_issuer,
-          cardBrand: card_brand,
-          riskLevel: risk_level ? parseInt(risk_level) : 0,
-          riskTitle: risk_title
-        }
-      })
-
-      return NextResponse.redirect(`${baseUrl}/order-success`, 303)
-    } else {
-       // Validation failed
-       await db.order.update({
-        where: { id: data.tran_id },
-        data: {
-          status: 'FAILED',
-          paymentStatus: 'FAILED',
-          valId: val_id
-        }
-      })
+    if (!validationResponse || (validationResponse.status !== 'VALID' && validationResponse.status !== 'VALIDATED')) {
       return NextResponse.redirect(`${baseUrl}/checkout?error=validation_failed`, 303)
     }
 
+    const { tran_id, amount, currency } = validationResponse
+
+    const order = await db.order.findUnique({ where: { transactionId: tran_id } })
+
+    if (!order) {
+      return NextResponse.redirect(`${baseUrl}/checkout?error=order_not_found`, 303)
+    }
+
+    if (order.paymentStatus === 'PAID') {
+      return NextResponse.redirect(`${baseUrl}/order-success`, 303)
+    }
+
+    const amountMatches = Math.abs(Number(amount) - order.totalAmount) < 0.01
+    const currencyMatches = (currency || 'BDT') === 'BDT'
+
+    if (!amountMatches || !currencyMatches) {
+      await db.order.update({
+        where: { id: order.id },
+        data: { status: 'FAILED', paymentStatus: 'FAILED', valId: val_id },
+      })
+      console.error(`Payment mismatch for order ${order.id}: expected ${order.totalAmount} BDT, got ${amount} ${currency}`)
+      return NextResponse.redirect(`${baseUrl}/checkout?error=payment_mismatch`, 303)
+    }
+
+    await db.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'PROCESSING',
+        paymentStatus: 'PAID',
+        valId: val_id,
+        bankTranId: validationResponse.bank_tran_id,
+        cardType: validationResponse.card_type,
+        cardNo: validationResponse.card_no,
+        cardIssuer: validationResponse.card_issuer,
+        cardBrand: validationResponse.card_brand,
+        riskLevel: validationResponse.risk_level ? parseInt(validationResponse.risk_level) : 0,
+        riskTitle: validationResponse.risk_title,
+      },
+    })
+
+    return NextResponse.redirect(`${baseUrl}/order-success`, 303)
+
   } catch (error) {
     console.error("SSLCommerz Success Error:", error)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     return NextResponse.redirect(`${baseUrl}/checkout?error=internal_error`, 303)
   }
 }

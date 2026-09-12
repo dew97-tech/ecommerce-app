@@ -1,59 +1,33 @@
-'use client'
+import { ProductCard } from "@/components/product/product-card";
+import Link from "next/link";
 
-import { FadeIn } from "@/components/animations/fade-in"
-import { ProductCard } from "@/components/product-card"
-import { motion } from "framer-motion"
-import { Sparkles } from "lucide-react"
-
-export function NewArrivals({ products }) {
-  if (!products || products.length === 0) return null
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  }
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  }
+export function NewArrivals({ products = [] }) {
+  if (products.length === 0) return null;
 
   return (
-    <div className="space-y-8">
-      <FadeIn>
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-500/10 rounded-2xl backdrop-blur-sm">
-            <Sparkles className="h-8 w-8 text-blue-500" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-              New Arrivals
-            </h2>
-            <p className="text-muted-foreground">Fresh products just added to our store</p>
-          </div>
+    <section className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            New arrivals
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            The latest products added to the catalog
+          </p>
         </div>
-      </FadeIn>
-      
-      <motion.div 
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true }}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-      >
+        <Link
+          href="/products?sort=newest"
+          className="text-sm font-medium text-primary hover:underline"
+        >
+          View all
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((product) => (
-          <motion.div key={product.id} variants={item}>
-              <div className="h-full p-1">
-                <ProductCard product={product} />
-              </div>
-          </motion.div>
+          <ProductCard key={product.id} product={product} />
         ))}
-      </motion.div>
-    </div>
-  )
+      </div>
+    </section>
+  );
 }

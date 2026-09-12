@@ -18,6 +18,12 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+  FAILED
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
 }
 
 model User {
@@ -65,27 +71,57 @@ model Product {
   discountedPrice Float?
   stock           Int         @default(0)
   isTrending      Boolean     @default(false)
-  images          String      @db.Text // Stored as JSON string
-  attributes      Json?       // Dynamic attributes like { "RAM": "16GB", "Color": "Black" }
-  availabilityStatus String?  @default("IN_STOCK") // IN_STOCK, OUT_OF_STOCK, PRE_ORDER, UP_COMING
+  images          String      @db.Text
+  attributes      Json?
+  availabilityStatus String?  @default("IN_STOCK")
+  isActive        Boolean     @default(true)
+  sourceUrl       String?
+  sourceStatus    String?
+  lastSyncedAt    DateTime?
+  discontinuedAt  DateTime?
   categoryId      String?
   category        Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   variants        Variant[]
   orderItems      OrderItem[]
   reviews         Review[]
+  priceHistory    PriceHistory[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
+  @@index([isActive])
+  @@index([sourceStatus])
+  @@index([lastSyncedAt])
+  @@index([isActive, availabilityStatus, createdAt])
+  @@index([categoryId, isActive, availabilityStatus])
+  @@index([isTrending, createdAt])
+  @@index([brand])
+  @@index([price])
+}
+
+model PriceHistory {
+  id                  String   @id @default(cuid())
+  productId           String
+  product             Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  oldPrice            Float?
+  newPrice            Float?
+  oldDiscountedPrice  Float?
+  newDiscountedPrice  Float?
+  sourceStatus        String?
+  createdAt           DateTime @default(now())
+
+  @@index([productId])
+  @@index([createdAt])
 }
 
 model Variant {
   id        String   @id @default(cuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  color     String?  // e.g., "Blue Titanium", "Graphite"
-  size      String?  // e.g., "M", "L", "XL"
-  capacity  String?  // e.g., "256GB", "512GB", "1TB"
+  color     String?
+  size      String?
+  capacity  String?
   stock     Int      @default(0)
-  price     Float    @default(0) // Price adjustment from base price
+  price     Float    @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -98,11 +134,9 @@ model Order {
   status          OrderStatus @default(PENDING)
   paymentMethod   String      @default("COD")
   shippingAddress String      @db.Text
-  
-  // SSLCommerz Transaction Details
   transactionId   String?     @unique
   valId           String?
-  paymentStatus   String      @default("PENDING") // PENDING, PAID, FAILED, CANCELLED
+  paymentStatus   String      @default("PENDING")
   bankTranId      String?
   cardType        String?
   cardNo          String?
@@ -115,6 +149,9 @@ model Order {
   orderItems      OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model OrderItem {
@@ -130,12 +167,15 @@ model OrderItem {
 model Banner {
   id        String   @id @default(cuid())
   image     String
+  imageMobile String?
   title     String?
   buttonText String?
   link      String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([isActive, createdAt])
 }
 
 model Review {
@@ -145,21 +185,39 @@ model Review {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
+
+  @@index([productId, createdAt])
 }
 
 model Blog {
-  id        String    @id @default(cuid())
-  title     String
-  slug      String    @unique
-  content   String    @db.Text
-  imageUrl  String?
-  authorId  String
-  author    User      @relation(fields: [authorId], references: [id])
-  comments  Comment[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  content     String     @db.Text
+  excerpt     String?    @db.Text
+  imageUrl    String?
+  category    String?
+  tags        Json?
+  status      BlogStatus @default(DRAFT)
+  publishedAt DateTime?
+  scheduledAt DateTime?
+  generatedBy String?
+  sourceData  Json?
+  reviewedAt  DateTime?
+  reviewedById String?
+  viewCount   Int        @default(0)
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  comments    Comment[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([status])
+  @@index([publishedAt])
+  @@index([status, publishedAt])
+  @@index([category, status])
 }
 
 model Comment {

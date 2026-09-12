@@ -45,9 +45,9 @@ export default function OrderSuccessPage() {
       <div className="animate-in zoom-in duration-500">
         <CheckCircle className="h-24 w-24 text-green-500" />
       </div>
-      <h1 className="text-4xl font-bold text-green-600">Payment Successful!</h1>
+      <h1 className="text-4xl font-bold text-green-600">Order Placed Successfully!</h1>
       <p className="text-muted-foreground text-lg max-w-md">
-        Thank you for your order. Your payment has been processed securely. We will contact you shortly for confirmation.
+        Thank you for your order. We will contact you shortly to confirm the delivery details.
       </p>
       
       <div className="w-full max-w-md space-y-2">

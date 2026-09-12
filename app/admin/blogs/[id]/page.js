@@ -1,4 +1,4 @@
-import { EditBlogForm } from "@/components/admin/edit-blog-form"
+import { BlogForm } from "@/components/admin/blog-form"
 import { db } from "@/lib/db"
 import { notFound } from "next/navigation"
 
@@ -10,5 +10,5 @@ export default async function EditBlogPage({ params }) {
 
   if (!blog) notFound()
 
-  return <EditBlogForm blog={blog} />
+  return <BlogForm blog={blog} />
 }

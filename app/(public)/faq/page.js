@@ -1,73 +1,77 @@
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FaqExplorer } from "@/components/faq/faq-explorer"
+import { JsonLd } from "@/components/seo/json-ld"
+import { FAQ_CATEGORIES } from "@/lib/content/legal"
+import { faqSchema } from "@/lib/seo/structured-data"
+import { siteConfig } from "@/lib/site-config"
+import { ChevronRight, Mail, Phone } from "lucide-react"
+import Link from "next/link"
+
+export const metadata = {
+  title: "FAQ",
+  description:
+    "Answers about orders, payments, delivery, returns, warranty, products, accounts and the PC Builder at RigNexus.",
+  alternates: { canonical: "/faq" },
+}
 
 export default function FAQPage() {
-  const faqs = [
-    {
-      question: "How do I place an order?",
-      answer: "Browse our products, add items to your cart, and proceed to checkout. Fill in your shipping details and choose your payment method to complete your order."
-    },
-    {
-      question: "What payment methods do you accept?",
-      answer: "We accept Cash on Delivery (COD), bKash, Nagad, and major credit/debit cards for your convenience."
-    },
-    {
-      question: "How long does delivery take?",
-      answer: "Delivery typically takes 3-5 business days within Dhaka and 5-7 business days for other areas of Bangladesh."
-    },
-    {
-      question: "Can I return or exchange products?",
-      answer: "Yes, we offer a 7-day return and exchange policy for most products. Items must be unused and in original packaging."
-    },
-    {
-      question: "How can I track my order?",
-      answer: "Once your order is shipped, you'll receive a tracking number via email. You can also check your order status in the 'My Orders' section of your account."
-    },
-    {
-      question: "Is my personal information secure?",
-      answer: "Absolutely! We use industry-standard encryption to protect your personal and payment information."
-    },
-    {
-      question: "Do you offer warranties on products?",
-      answer: "Yes, many of our products come with manufacturer warranties. Warranty details are mentioned on individual product pages."
-    },
-    {
-      question: "How do I contact customer support?",
-      answer: "You can reach us via email at support@bdshop.com, call us at +880 1234-567890, or use the contact form on our Contact Us page."
-    },
-  ]
+  const questions = FAQ_CATEGORIES.flatMap((category) => category.items)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-accent/5">
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-muted-foreground mb-8">Find answers to common questions</p>
+    <div className="container mx-auto px-4 py-8">
+      <JsonLd data={faqSchema(questions)} />
 
-          <Card className="border-0 shadow-lg backdrop-blur-sm bg-card/80">
-            <CardHeader>
-              <CardTitle>Common Questions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
+      <nav
+        className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground"
+        aria-label="Breadcrumb"
+      >
+        <Link href="/" className="transition-colors hover:text-primary">
+          Home
+        </Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <span className="font-medium text-foreground">FAQ</span>
+      </nav>
+
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Frequently Asked Questions
+        </h1>
+        <p className="mt-2 max-w-2xl text-muted-foreground">
+          Quick answers about ordering, delivery, payments, returns, warranty,
+          accounts and the PC Builder.
+        </p>
+      </header>
+
+      <FaqExplorer categories={FAQ_CATEGORIES} />
+
+      <div className="mt-10 rounded-xl border border-border bg-card p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          Still need help?
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Our support team is available {siteConfig.hours}. Reach out and we will
+          get back to you as soon as possible.
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+          <Link
+            href="/contact"
+            className="inline-flex h-9 items-center rounded-md bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Contact us
+          </Link>
+          <a
+            href={`mailto:${siteConfig.supportEmail}`}
+            className="inline-flex items-center gap-2 font-medium text-primary hover:underline"
+          >
+            <Mail className="h-4 w-4" />
+            {siteConfig.supportEmail}
+          </a>
+          <a
+            href={`tel:${siteConfig.supportPhone.replace(/\s/g, "")}`}
+            className="inline-flex items-center gap-2 font-medium text-primary hover:underline"
+          >
+            <Phone className="h-4 w-4" />
+            {siteConfig.supportPhone}
+          </a>
         </div>
       </div>
     </div>

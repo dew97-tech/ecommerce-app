@@ -17,7 +17,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
   
-  // Color adjustment states
+
   const [brightness, setBrightness] = useState(100)
   const [contrast, setContrast] = useState(100)
   const [saturation, setSaturation] = useState(100)
@@ -54,7 +54,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
     canvas.width = pixelCrop.width
     canvas.height = pixelCrop.height
 
-    // Apply color adjustments
+
     ctx.filter = `brightness(${adjustments.brightness}%) contrast(${adjustments.contrast}%) saturate(${adjustments.saturation}%)`
 
     ctx.drawImage(
@@ -77,6 +77,11 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
   }
 
   const handleSave = async () => {
+    if (!selectedImage || !croppedAreaPixels) {
+      alert('Please wait for the image to finish loading before saving.')
+      return
+    }
+
     try {
       setIsUploading(true)
 
@@ -100,7 +105,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
         onUploadComplete?.(data.imageUrl)
         setIsOpen(false)
         setSelectedImage(null)
-        // Reset adjustments
+
         setBrightness(100)
         setContrast(100)
         setSaturation(100)
@@ -201,7 +206,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Crop Area */}
+            
             <div className="relative h-96 bg-muted rounded-lg overflow-hidden">
               {selectedImage && (
                 <Cropper
@@ -223,7 +228,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
               )}
             </div>
 
-            {/* Zoom Control */}
+            
             <div className="space-y-2">
               <Label>Zoom</Label>
               <Slider
@@ -236,7 +241,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
               />
             </div>
 
-            {/* Color Adjustments */}
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Brightness</Label>
@@ -278,7 +283,7 @@ export function AvatarUpload({ currentImage, onUploadComplete }) {
               </div>
             </div>
 
-            {/* Action Buttons */}
+            
             <div className="flex justify-end gap-2">
               <Button
                 type="button"

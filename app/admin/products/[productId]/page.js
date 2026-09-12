@@ -8,6 +8,7 @@ export default async function EditProductPage({ params }) {
   const { productId } = await params
   const product = await db.product.findUnique({
     where: { id: productId },
+    include: { variants: true },
   })
   const categories = await db.category.findMany()
 
@@ -15,11 +16,5 @@ export default async function EditProductPage({ params }) {
     notFound()
   }
 
-  return (
-    <div className="p-8 pt-6">
-      <div className="max-w-2xl mx-auto">
-        <ProductForm product={product} categories={categories} />
-      </div>
-    </div>
-  )
+  return <ProductForm product={product} categories={categories} />
 }

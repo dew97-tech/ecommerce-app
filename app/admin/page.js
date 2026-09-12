@@ -1,210 +1,434 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AdminPageHeader } from "@/components/admin/admin-page-header"
+import { EmptyState } from "@/components/admin/empty-state"
+import { StatCard } from "@/components/admin/stat-card"
+import { StatusBadge } from "@/components/admin/status-badge"
+import { Button } from "@/components/ui/button"
 import { db } from "@/lib/db"
-import { CreditCard, DollarSign, Package, TrendingUp } from "lucide-react"
+import { parseImages } from "@/lib/images"
+import {
+  AlertTriangle,
+  Archive,
+  Clock,
+  FolderTree,
+  Image as ImageIcon,
+  Package,
+  Plus,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 
-async function getStats() {
-  const totalRevenue = await db.order.aggregate({
-    where: { status: { not: 'CANCELLED' } },
-    _sum: { totalAmount: true },
-  })
-  
-  const totalOrders = await db.order.count()
-  const totalProducts = await db.product.count()
-  
-  // Active users (users who placed an order in the last 30 days)
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  
-  const activeUsersCount = await db.user.count({
-    where: {
-      orders: {
-        some: {
-          createdAt: {
-            gte: thirtyDaysAgo
-          }
-        }
-      }
-    }
-  })
+function percentChange(current, previous) {
+  if (!previous) return current > 0 ? 100 : 0
+  return ((current - previous) / previous) * 100
+}
 
-  // Revenue Chart Data (Last 7 days)
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+async function getDashboardData() {
+  const now = new Date()
+  const thirtyDaysAgo = new Date(now)
+  thirtyDaysAgo.setDate(now.getDate() - 30)
+  const sixtyDaysAgo = new Date(now)
+  sixtyDaysAgo.setDate(now.getDate() - 60)
+  const sevenDaysAgo = new Date(now)
+  sevenDaysAgo.setDate(now.getDate() - 7)
 
-  const ordersLast7Days = await db.order.findMany({
-    where: {
-      createdAt: {
-        gte: sevenDaysAgo
+  const [
+    revenue30,
+    revenuePrev30,
+    orders30,
+    ordersPrev30,
+    activeProducts,
+    totalProducts,
+    activeUsers,
+    pendingOrders,
+    lowStockCount,
+    archivedCount,
+    ordersLast7Days,
+    recentOrders,
+    lowStockProducts,
+    topCategories,
+  ] = await Promise.all([
+    db.order.aggregate({
+      where: {
+        status: { not: "CANCELLED" },
+        paymentStatus: { not: "FAILED" },
+        createdAt: { gte: thirtyDaysAgo },
       },
-      status: { not: 'CANCELLED' }
-    },
-    select: {
-      createdAt: true,
-      totalAmount: true
-    }
-  })
+      _sum: { totalAmount: true },
+    }),
+    db.order.aggregate({
+      where: {
+        status: { not: "CANCELLED" },
+        paymentStatus: { not: "FAILED" },
+        createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo },
+      },
+      _sum: { totalAmount: true },
+    }),
+    db.order.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+    db.order.count({
+      where: { createdAt: { gte: sixtyDaysAgo, lt: thirtyDaysAgo } },
+    }),
+    db.product.count({ where: { isActive: true } }),
+    db.product.count(),
+    db.user.count({
+      where: { orders: { some: { createdAt: { gte: thirtyDaysAgo } } } },
+    }),
+    db.order.count({ where: { status: "PENDING" } }),
+    db.product.count({ where: { isActive: true, stock: { lte: 5 } } }),
+    db.product.count({ where: { isActive: false } }),
+    db.order.findMany({
+      where: {
+        createdAt: { gte: sevenDaysAgo },
+        status: { not: "CANCELLED" },
+      },
+      select: { createdAt: true, totalAmount: true },
+    }),
+    db.order.findMany({
+      take: 6,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true, email: true } },
+        orderItems: { select: { id: true } },
+      },
+    }),
+    db.product.findMany({
+      where: { isActive: true, stock: { lte: 5 } },
+      orderBy: { stock: "asc" },
+      take: 5,
+      select: { id: true, name: true, slug: true, stock: true, images: true },
+    }),
+    db.category.findMany({
+      orderBy: { products: { _count: "desc" } },
+      take: 6,
+      select: {
+        id: true,
+        name: true,
+        _count: { select: { products: true } },
+      },
+    }),
+  ])
 
-  const chartData = Array(7).fill(0).map((_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (6 - i))
-    const dateString = date.toISOString().split('T')[0]
-    
-    const dayTotal = ordersLast7Days
-      .filter(order => order.createdAt.toISOString().split('T')[0] === dateString)
-      .reduce((sum, order) => sum + order.totalAmount, 0)
-      
-    return {
-      date: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      amount: dayTotal
-    }
-  })
+  const chartData = Array(7)
+    .fill(0)
+    .map((_, index) => {
+      const date = new Date()
+      date.setDate(date.getDate() - (6 - index))
+      const dateString = date.toISOString().split("T")[0]
 
-  // Recent Sales
-  const recentSales = await db.order.findMany({
-    take: 5,
-    orderBy: {
-      createdAt: 'desc'
-    },
-    include: {
-      user: {
-        select: {
-          name: true,
-          email: true
-        }
+      const amount = ordersLast7Days
+        .filter(
+          (order) => order.createdAt.toISOString().split("T")[0] === dateString
+        )
+        .reduce((sum, order) => sum + order.totalAmount, 0)
+
+      return {
+        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        amount,
       }
-    }
-  })
+    })
 
   return {
-    revenue: totalRevenue._sum.totalAmount || 0,
-    orders: totalOrders,
-    products: totalProducts,
-    activeUsers: activeUsersCount,
+    revenue30: revenue30._sum.totalAmount || 0,
+    revenuePrev30: revenuePrev30._sum.totalAmount || 0,
+    orders30,
+    ordersPrev30,
+    activeProducts,
+    totalProducts,
+    activeUsers,
+    pendingOrders,
+    lowStockCount,
+    archivedCount,
     chartData,
-    recentSales
+    recentOrders,
+    lowStockProducts,
+    topCategories,
   }
 }
 
 export default async function AdminDashboard() {
-  const stats = await getStats()
-  const maxVal = Math.max(...stats.chartData.map(d => d.amount), 100) // Avoid divide by zero
+  const stats = await getDashboardData()
+  const maxChartValue = Math.max(...stats.chartData.map((day) => day.amount), 1)
+  const hasChartData = stats.chartData.some((day) => day.amount > 0)
 
-  const statCards = [
+  const kpis = [
     {
-      title: "Total Revenue",
-      value: `৳${stats.revenue.toLocaleString()}`,
-      icon: DollarSign,
-      description: "Total earnings",
-      trend: "+12.5%", // You'd calculate this by comparing with previous period
-      color: "text-green-500"
-    },
-    {
-      title: "Orders",
-      value: `${stats.orders}`,
-      icon: CreditCard,
-      description: "Total orders placed",
-      trend: "+8.2%",
-      color: "text-blue-500"
-    },
-    {
-      title: "Products",
-      value: `${stats.products}`,
-      icon: Package,
-      description: "Products in catalog",
-      trend: "+3",
-      color: "text-orange-500"
-    },
-    {
-      title: "Active Users",
-      value: `${stats.activeUsers}`,
+      label: "Revenue (30d)",
+      value: `৳${stats.revenue30.toLocaleString("en-US")}`,
       icon: TrendingUp,
-      description: "Placed order in last 30 days",
-      trend: "+15%",
-      color: "text-purple-500"
-    }
+      tone: "success",
+      trend: percentChange(stats.revenue30, stats.revenuePrev30),
+    },
+    {
+      label: "Orders (30d)",
+      value: stats.orders30.toLocaleString("en-US"),
+      icon: ShoppingCart,
+      tone: "default",
+      trend: percentChange(stats.orders30, stats.ordersPrev30),
+    },
+    {
+      label: "Active products",
+      value: stats.activeProducts.toLocaleString("en-US"),
+      icon: Package,
+      tone: "default",
+      hint: `${stats.totalProducts.toLocaleString("en-US")} total in catalog`,
+    },
+    {
+      label: "Active buyers (30d)",
+      value: stats.activeUsers.toLocaleString("en-US"),
+      icon: Users,
+      tone: "default",
+      hint: "Customers who placed an order",
+    },
+  ]
+
+  const alerts = [
+    {
+      label: "Pending orders",
+      value: stats.pendingOrders.toLocaleString("en-US"),
+      icon: Clock,
+      tone: stats.pendingOrders > 0 ? "warning" : "default",
+      href: "/admin/orders?status=PENDING",
+      hint: "Waiting for confirmation",
+    },
+    {
+      label: "Low stock (≤ 5)",
+      value: stats.lowStockCount.toLocaleString("en-US"),
+      icon: AlertTriangle,
+      tone: stats.lowStockCount > 0 ? "danger" : "success",
+      href: "/admin/products?filter=low-stock",
+      hint: "Active products to restock",
+    },
+    {
+      label: "Archived products",
+      value: stats.archivedCount.toLocaleString("en-US"),
+      icon: Archive,
+      tone: "default",
+      href: "/admin/products?filter=archived",
+      hint: "Hidden from the storefront",
+    },
   ]
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 space-y-6 p-8 pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Dashboard</h2>
-            <p className="text-muted-foreground mt-1">Overview of your store performance</p>
-          </div>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {statCards.map((stat, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-green-500 font-medium">{stat.trend}</span> from last month
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+    <div className="space-y-6 p-4 md:p-6">
+      <AdminPageHeader
+        title="Dashboard"
+        description="Track sales, stock health and catalog activity."
+        actions={
+          <>
+            <Button asChild size="sm" className="gap-1.5">
+              <Link href="/admin/products/new">
+                <Plus className="h-4 w-4" />
+                Add product
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1.5">
+              <Link href="/admin/categories/new">
+                <FolderTree className="h-4 w-4" />
+                Add category
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1.5">
+              <Link href="/admin/banners">
+                <ImageIcon className="h-4 w-4" />
+                Add banner
+              </Link>
+            </Button>
+          </>
+        }
+      />
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4">
-            <CardHeader>
-              <CardTitle>Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <div className="h-[200px] w-full flex items-end justify-between gap-2 px-4">
-                {stats.chartData.map((data, i) => (
-                  <div key={i} className="w-full bg-primary/10 hover:bg-primary/20 transition-colors rounded-t-md relative group" style={{ height: `${(data.amount / maxVal) * 100}%` }}>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-xs py-1 px-2 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
-                      ৳{data.amount.toLocaleString()}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((kpi) => (
+          <StatCard key={kpi.label} {...kpi} />
+        ))}
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {alerts.map((alert) => (
+          <StatCard key={alert.label} {...alert} />
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-7">
+
+        <section className="rounded-xl border border-border bg-card p-5 lg:col-span-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-semibold text-foreground">Revenue — last 7 days</h2>
+              <p className="text-xs text-muted-foreground">
+                Orders excluding cancelled and failed payments
+              </p>
+            </div>
+          </div>
+
+          {hasChartData ? (
+            <>
+              <div className="flex h-[200px] items-end justify-between gap-3">
+                {stats.chartData.map((day, index) => (
+                  <div
+                    key={index}
+                    className="group relative flex h-full w-full items-end"
+                  >
+                    <div
+                      className="w-full rounded-t-md bg-primary/25 transition-colors group-hover:bg-primary/50"
+                      style={{
+                        height: `${Math.max(
+                          (day.amount / maxChartValue) * 100,
+                          day.amount > 0 ? 4 : 1
+                        )}%`,
+                      }}
+                    />
+                    <div className="pointer-events-none absolute -top-7 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded border border-border bg-popover px-2 py-1 text-xs text-popover-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+                      ৳{day.amount.toLocaleString("en-US")}
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="flex justify-between px-4 mt-2 text-xs text-muted-foreground">
-                {stats.chartData.map((data, i) => (
-                  <span key={i}>{data.date}</span>
+              <div className="mt-2 flex justify-between gap-3 text-xs text-muted-foreground">
+                {stats.chartData.map((day, index) => (
+                  <span key={index} className="flex-1 text-center">
+                    {day.date}
+                  </span>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-          <Card className="col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                You made {stats.recentSales.length} sales recently.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-8">
-                {stats.recentSales.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">No recent sales found.</p>
-                ) : (
-                    stats.recentSales.map((order) => (
-                    <div key={order.id} className="flex items-center">
-                        <div className="space-y-1">
-                        <p className="text-sm font-medium leading-none">{order.user.name || 'Guest'}</p>
-                        <p className="text-sm text-muted-foreground">
-                            {order.user.email}
-                        </p>
-                        </div>
-                        <div className="ml-auto font-medium">+৳{order.totalAmount.toLocaleString()}</div>
-                    </div>
-                    ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            </>
+          ) : (
+            <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+              No sales in the last 7 days.
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-border bg-card lg:col-span-3">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <h2 className="font-semibold text-foreground">Recent orders</h2>
+            <Link
+              href="/admin/orders"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+
+          {stats.recentOrders.length === 0 ? (
+            <div className="p-5">
+              <EmptyState
+                icon={ShoppingCart}
+                title="No orders yet"
+                description="New orders will appear here."
+              />
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {stats.recentOrders.map((order) => (
+                <li
+                  key={order.id}
+                  className="flex items-center justify-between gap-3 px-5 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {order.user?.name || "Guest"}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      #{order.id.slice(-6).toUpperCase()} ·{" "}
+                      {order.orderItems.length} item
+                      {order.orderItems.length === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="text-sm font-semibold text-price">
+                      ৳{order.totalAmount.toLocaleString("en-US")}
+                    </span>
+                    <StatusBadge status={order.status} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+
+        <section className="rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <h2 className="font-semibold text-foreground">Low stock</h2>
+            <Link
+              href="/admin/products?filter=low-stock"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Manage
+            </Link>
+          </div>
+
+          {stats.lowStockProducts.length === 0 ? (
+            <p className="px-5 py-8 text-center text-sm text-muted-foreground">
+              Every active product has healthy stock.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {stats.lowStockProducts.map((product) => (
+                <li key={product.id} className="flex items-center gap-3 px-5 py-3">
+                  <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded border border-border bg-white">
+                    <Image
+                      src={
+                        parseImages(product.images)[0] || "/placeholder.png"
+                      }
+                      alt=""
+                      fill
+                      sizes="40px"
+                      className="object-contain p-1"
+                    />
+                  </div>
+                  <Link
+                    href={`/admin/products/${product.id}`}
+                    className="min-w-0 flex-1 truncate text-sm font-medium text-foreground hover:text-primary"
+                  >
+                    {product.name}
+                  </Link>
+                  <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-semibold text-destructive">
+                    {product.stock} left
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-5 py-4">
+            <h2 className="font-semibold text-foreground">Top categories</h2>
+            <Link
+              href="/admin/categories"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Manage
+            </Link>
+          </div>
+
+          <ul className="divide-y divide-border">
+            {stats.topCategories.map((category) => (
+              <li
+                key={category.id}
+                className="flex items-center justify-between gap-3 px-5 py-3"
+              >
+                <Link
+                  href={`/admin/categories/${category.id}`}
+                  className="min-w-0 truncate text-sm font-medium text-foreground hover:text-primary"
+                >
+                  {category.name}
+                </Link>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {category._count.products.toLocaleString("en-US")} products
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </div>
   )

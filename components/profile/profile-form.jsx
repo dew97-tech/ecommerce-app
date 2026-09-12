@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { updateProfile } from '@/lib/profile-actions'
+import { updateProfile } from '@/lib/actions/profile'
 import { useSession } from 'next-auth/react'
 import { useActionState, useState } from 'react'
 
@@ -17,7 +17,7 @@ export function ProfileForm({ user }) {
 
   const handleAvatarUpdate = async (newImageUrl) => {
     setCurrentAvatar(newImageUrl)
-    // Update the session to reflect the new image immediately in the navbar
+
     await update({ user: { image: newImageUrl } })
   }
 
@@ -29,7 +29,7 @@ export function ProfileForm({ user }) {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {/* Avatar Upload Section */}
+          
           <div className="flex justify-center py-4">
             <AvatarUpload 
               currentImage={currentAvatar} 
